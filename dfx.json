@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "canisters": {
+    "agent_manager": {
+      "type": "motoko",
+      "main": "src/canisters/agent_manager/main.mo"
+    },
+    "llm_processor": {
+      "type": "motoko",
+      "main": "src/canisters/llm_processor/main.mo"
+    },
+    "metrics_collector": {
+      "type": "motoko", 
+      "main": "src/canisters/metrics_collector/main.mo"
+    },
+    "auth_proxy": {
+      "type": "motoko",
+      "main": "src/canisters/auth_proxy/main.mo"
+    },
+    "data_storage": {
+      "type": "motoko",
+      "main": "src/canisters/data_storage/main.mo"
+    },
+    "frontend": {
+      "type": "assets",
+      "source": ["src/frontend/dist/"]
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943",
+      "type": "ephemeral"
+    },
+    "ic": {
+      "providers": ["https://ic0.app"],
+      "type": "persistent"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  }
+} 

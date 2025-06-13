@@ -1,0 +1,38 @@
+{
+  "name": "canistbase",
+  "version": "1.0.0",
+  "description": "Decentralized AI agent platform on Internet Computer Protocol",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run build:frontend && dfx build",
+    "build:frontend": "cd src/frontend && npm run build",
+    "start": "dfx start --background && npm run deploy:local",
+    "deploy:local": "dfx deploy --network local",
+    "deploy:ic": "dfx deploy --network ic",
+    "test": "npm run test:frontend && npm run test:canisters",
+    "test:frontend": "cd src/frontend && npm test",
+    "test:canisters": "dfx canister call agent_manager test",
+    "dev": "concurrently \"dfx start\" \"cd src/frontend && npm run dev\"",
+    "clean": "dfx stop && rm -rf .dfx",
+    "install:frontend": "cd src/frontend && npm install",
+    "install:sdk": "cd src/sdk && npm install"
+  },
+  "keywords": [
+    "icp",
+    "internet-computer",
+    "ai",
+    "agents",
+    "blockchain",
+    "decentralized",
+    "motoko"
+  ],
+  "author": "CanistBase Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "workspaces": [
+    "src/frontend",
+    "src/sdk"
+  ]
+} 
