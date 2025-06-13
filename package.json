@@ -1,21 +1,17 @@
 {
-  "name": "canistbase",
-  "version": "1.0.0",
-  "description": "Decentralized AI agent platform on Internet Computer Protocol",
-  "main": "index.js",
+  "name": "canistchat",
+  "author": "CanistChat Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
   "scripts": {
-    "build": "npm run build:frontend && dfx build",
-    "build:frontend": "cd src/frontend && npm run build",
-    "start": "dfx start --background && npm run deploy:local",
-    "deploy:local": "dfx deploy --network local",
-    "deploy:ic": "dfx deploy --network ic",
-    "test": "npm run test:frontend && npm run test:canisters",
-    "test:frontend": "cd src/frontend && npm test",
-    "test:canisters": "dfx canister call agent_manager test",
-    "dev": "concurrently \"dfx start\" \"cd src/frontend && npm run dev\"",
-    "clean": "dfx stop && rm -rf .dfx",
-    "install:frontend": "cd src/frontend && npm install",
-    "install:sdk": "cd src/sdk && npm install"
+    "build": "npm run build --workspaces --if-present",
+    "prebuild": "npm run prebuild --workspaces --if-present",
+    "pretest": "npm run prebuild --workspaces --if-present",
+    "start": "npm start --workspaces --if-present",
+    "test": "npm test --workspaces --if-present"
   },
   "keywords": [
     "icp",
@@ -26,13 +22,9 @@
     "decentralized",
     "motoko"
   ],
-  "author": "CanistBase Team",
-  "license": "MIT",
-  "devDependencies": {
-    "concurrently": "^8.2.0"
-  },
+  "type": "module",
   "workspaces": [
-    "src/frontend",
+    "src/canistchat_frontend",
     "src/sdk"
   ]
 } 

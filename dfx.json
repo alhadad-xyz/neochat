@@ -1,29 +1,31 @@
 {
-  "version": 1,
   "canisters": {
     "agent_manager": {
       "type": "motoko",
-      "main": "src/canisters/agent_manager/main.mo"
+      "main": "src/canistchat_backend/agent_manager/main.mo"
     },
     "llm_processor": {
       "type": "motoko",
-      "main": "src/canisters/llm_processor/main.mo"
+      "main": "src/canistchat_backend/llm_processor/main.mo"
     },
     "metrics_collector": {
       "type": "motoko", 
-      "main": "src/canisters/metrics_collector/main.mo"
+      "main": "src/canistchat_backend/metrics_collector/main.mo"
     },
     "auth_proxy": {
       "type": "motoko",
-      "main": "src/canisters/auth_proxy/main.mo"
+      "main": "src/canistchat_backend/auth_proxy/main.mo"
     },
     "data_storage": {
       "type": "motoko",
-      "main": "src/canisters/data_storage/main.mo"
+      "main": "src/canistchat_backend/data_storage/main.mo"
     },
-    "frontend": {
+    "canistchat_frontend": {
+      "source": [
+        "src/canistchat_frontend/dist"
+      ],
       "type": "assets",
-      "source": ["src/frontend/dist/"]
+      "workspace": "canistchat_frontend"
     }
   },
   "networks": {
@@ -41,5 +43,7 @@
       "args": "",
       "packtool": ""
     }
-  }
+  },
+  "output_env_file": ".env",
+  "version": 1
 } 
