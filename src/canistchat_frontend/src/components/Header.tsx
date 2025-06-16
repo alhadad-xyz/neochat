@@ -1,9 +1,8 @@
-
-import React from 'react';
-import { Bot, Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import ThemeToggle from './ThemeToggle';
+import React from "react";
+import { Bot, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import ThemeToggle from "./ThemeToggle";
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -14,7 +13,7 @@ const Header = ({ isMenuOpen, setIsMenuOpen }: HeaderProps) => {
   const navigate = useNavigate();
 
   const handleLaunchApp = () => {
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   return (
@@ -25,9 +24,7 @@ const Header = ({ isMenuOpen, setIsMenuOpen }: HeaderProps) => {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
               <Bot className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              NeoChat
-            </span>
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">NeoChat</span>
           </div>
 
           <nav className="hidden md:flex items-center space-x-8">
@@ -41,22 +38,14 @@ const Header = ({ isMenuOpen, setIsMenuOpen }: HeaderProps) => {
               Pricing
             </a>
             <ThemeToggle />
-            <Button 
-              onClick={handleLaunchApp}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg backdrop-blur-sm"
-            >
+            <Button onClick={handleLaunchApp} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg backdrop-blur-sm">
               Launch App
             </Button>
           </nav>
 
           <div className="md:hidden flex items-center space-x-2">
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/30 dark:border-white/10"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
+            <Button variant="ghost" size="icon" className="backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/30 dark:border-white/10" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </Button>
           </div>
@@ -74,10 +63,7 @@ const Header = ({ isMenuOpen, setIsMenuOpen }: HeaderProps) => {
               <a href="#pricing" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Pricing
               </a>
-              <Button 
-                onClick={handleLaunchApp}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full shadow-lg"
-              >
+              <Button onClick={handleLaunchApp} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full shadow-lg">
                 Launch App
               </Button>
             </nav>
