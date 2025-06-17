@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanistChat Embed Widget Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .test-section p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .inline-widget {
+            margin: 20px 0;
+        }
+        .code-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 CanistChat Embed Widget Test Page</h1>
+        <p>This page demonstrates different embed widget configurations and integration methods.</p>
+
+        <!-- Test 1: Inline Widget -->
+        <div class="test-section">
+            <h2>1. Inline Widget (Light Theme)</h2>
+            <p>This widget is embedded directly in the page content with a light theme.</p>
+            <div class="inline-widget">
+                <div id="canistchat-widget-agent_2-inline"></div>
+            </div>
+            <div class="code-block">
+                &lt;div id="canistchat-widget-agent_2-inline"&gt;&lt;/div&gt;
+            </div>
+        </div>
+
+        <!-- Test 2: Dark Theme Widget -->
+        <div class="test-section">
+            <h2>2. Inline Widget (Dark Theme)</h2>
+            <p>Same widget but with dark theme and custom colors.</p>
+            <div class="inline-widget">
+                <div id="canistchat-widget-agent_2-dark"></div>
+            </div>
+            <div class="code-block">
+                &lt;div id="canistchat-widget-agent_2-dark"&gt;&lt;/div&gt;
+            </div>
+        </div>
+
+        <!-- Test 3: React Component Example -->
+        <div class="test-section">
+            <h2>3. React Component Integration</h2>
+            <p>Example of how to integrate the widget in a React application.</p>
+            <div class="code-block">
+const CanistChatWidget = () => {
+  return (
+    &lt;iframe
+      src="http://localhost:3000/embed?agent=agent_2&theme=light&color=%234F46E5"
+      width="400px"
+      height="600px"
+      style={{
+        border: 'none',
+        borderRadius: '12px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+      }}
+      allow="encrypted-media"
+      title="CanistChat Widget"
+    /&gt;
+  );
+};
+            </div>
+        </div>
+
+        <!-- Test 4: WordPress Integration -->
+        <div class="test-section">
+            <h2>4. WordPress Shortcode</h2>
+            <p>WordPress integration using shortcodes.</p>
+            <div class="code-block">
+[canistchat agent="agent_2" theme="light" color="#4F46E5" width="400px" height="600px"]
+            </div>
+        </div>
+
+        <!-- Test 5: Direct iframe -->
+        <div class="test-section">
+            <h2>5. Direct iframe Integration</h2>
+            <p>Simple iframe integration for any website.</p>
+            <div class="inline-widget">
+                <iframe 
+                    src="http://localhost:3000/embed?agent=agent_2&theme=light&color=%234F46E5&welcome=Hello!%20Welcome%20to%20our%20test%20widget&placeholder=Ask%20me%20anything..."
+                    width="400px" 
+                    height="600px" 
+                    style="border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"
+                    allow="encrypted-media"
+                    title="CanistChat Widget">
+                </iframe>
+            </div>
+            <div class="code-block">
+&lt;iframe 
+    src="http://localhost:3000/embed?agent=agent_2&theme=light&color=%234F46E5"
+    width="400px" 
+    height="600px" 
+    style="border: none; border-radius: 12px;"
+    title="CanistChat Widget"&gt;
+&lt;/iframe&gt;
+            </div>
+        </div>
+
+        <!-- Test 6: Mobile Responsive -->
+        <div class="test-section">
+            <h2>6. Mobile Responsive Widget</h2>
+            <p>Widget that adapts to mobile screen sizes.</p>
+            <div class="inline-widget">
+                <iframe 
+                    src="http://localhost:3000/embed?agent=agent_2&theme=auto&color=%23e11d48"
+                    style="width: 100%; max-width: 400px; height: 500px; border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"
+                    allow="encrypted-media"
+                    title="Mobile Responsive CanistChat Widget">
+                </iframe>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ Testing Checklist</h2>
+            <p>Use this checklist to verify widget functionality:</p>
+            <ul>
+                <li>☐ Widget loads correctly</li>
+                <li>☐ Chat interface is responsive</li>
+                <li>☐ Messages send and receive properly</li>
+                <li>☐ Styling matches preferences</li>
+                <li>☐ Widget works on mobile devices</li>
+                <li>☐ Different themes work correctly</li>
+                <li>☐ Custom colors apply properly</li>
+                <li>☐ Welcome messages display correctly</li>
+                <li>☐ No console errors</li>
+                <li>☐ Cross-browser compatibility</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Floating Widget Test -->
+    <div id="canistchat-widget-agent_2-floating"></div>
+
+    <!-- Widget Scripts -->
+    <script>
+    // Test 1: Inline Light Theme Widget
+    (function() {
+        const config = {
+            agentId: 'agent_2',
+            canisterId: 'localhost:3000',
+            theme: 'light',
+            width: '100%',
+            height: '500px',
+            position: 'inline',
+            primaryColor: '#4F46E5',
+            borderRadius: '12px',
+            showHeader: true,
+            showPoweredBy: true,
+            minimizable: false,
+            autoOpen: true,
+            title: 'Test Agent',
+            subtitle: 'AI Assistant',
+            welcomeMessage: 'Hello! I\'m your test agent. How can I help you today?',
+            placeholder: 'Type your message here...'
+        };
+
+        const container = document.getElementById('canistchat-widget-agent_2-inline');
+        if (container) {
+            const iframe = document.createElement('iframe');
+            const embedUrl = new URL('http://localhost:3000/embed');
+            embedUrl.searchParams.set('agent', config.agentId);
+            embedUrl.searchParams.set('theme', config.theme);
+            embedUrl.searchParams.set('color', encodeURIComponent(config.primaryColor));
+            embedUrl.searchParams.set('welcome', encodeURIComponent(config.welcomeMessage));
+            embedUrl.searchParams.set('placeholder', encodeURIComponent(config.placeholder));
+            
+            iframe.src = embedUrl.toString();
+            iframe.style.width = config.width;
+            iframe.style.height = config.height;
+            iframe.style.border = 'none';
+            iframe.style.borderRadius = config.borderRadius;
+            iframe.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+            iframe.allow = 'encrypted-media';
+            iframe.title = config.title + ' - AI Assistant';
+            iframe.loading = 'lazy';
+
+            container.appendChild(iframe);
+        }
+    })();
+
+    // Test 2: Inline Dark Theme Widget
+    (function() {
+        const config = {
+            agentId: 'agent_2',
+            canisterId: 'localhost:3000',
+            theme: 'dark',
+            width: '100%',
+            height: '500px',
+            position: 'inline',
+            primaryColor: '#7c3aed',
+            borderRadius: '12px',
+            showHeader: true,
+            showPoweredBy: true,
+            minimizable: false,
+            autoOpen: true,
+            title: 'Test Agent',
+            subtitle: 'AI Assistant',
+            welcomeMessage: 'Welcome to the dark side! How can I assist you?',
+            placeholder: 'Ask me anything...'
+        };
+
+        const container = document.getElementById('canistchat-widget-agent_2-dark');
+        if (container) {
+            const iframe = document.createElement('iframe');
+            const embedUrl = new URL('http://localhost:3000/embed');
+            embedUrl.searchParams.set('agent', config.agentId);
+            embedUrl.searchParams.set('theme', config.theme);
+            embedUrl.searchParams.set('color', encodeURIComponent(config.primaryColor));
+            embedUrl.searchParams.set('welcome', encodeURIComponent(config.welcomeMessage));
+            embedUrl.searchParams.set('placeholder', encodeURIComponent(config.placeholder));
+            
+            iframe.src = embedUrl.toString();
+            iframe.style.width = config.width;
+            iframe.style.height = config.height;
+            iframe.style.border = 'none';
+            iframe.style.borderRadius = config.borderRadius;
+            iframe.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+            iframe.allow = 'encrypted-media';
+            iframe.title = config.title + ' - AI Assistant';
+            iframe.loading = 'lazy';
+
+            container.appendChild(iframe);
+        }
+    })();
+
+    // Test 3: Floating Widget (Bottom Right)
+    (function() {
+        const config = {
+            agentId: 'agent_2',
+            canisterId: 'localhost:3000',
+            theme: 'light',
+            width: '350px',
+            height: '500px',
+            position: 'bottom-right',
+            primaryColor: '#059669',
+            borderRadius: '12px',
+            showHeader: true,
+            showPoweredBy: true,
+            minimizable: true,
+            autoOpen: false,
+            title: 'Support Chat',
+            subtitle: 'AI Assistant',
+            welcomeMessage: 'Hi! I\'m your floating support assistant. Click to chat!',
+            placeholder: 'How can I help you?'
+        };
+
+        const container = document.getElementById('canistchat-widget-agent_2-floating');
+        if (container) {
+            const widgetWrapper = document.createElement('div');
+            widgetWrapper.style.position = 'fixed';
+            widgetWrapper.style.bottom = '20px';
+            widgetWrapper.style.right = '20px';
+            widgetWrapper.style.zIndex = '9999';
+            widgetWrapper.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+            const iframe = document.createElement('iframe');
+            const embedUrl = new URL('http://localhost:3000/embed');
+            embedUrl.searchParams.set('agent', config.agentId);
+            embedUrl.searchParams.set('theme', config.theme);
+            embedUrl.searchParams.set('color', encodeURIComponent(config.primaryColor));
+            embedUrl.searchParams.set('welcome', encodeURIComponent(config.welcomeMessage));
+            embedUrl.searchParams.set('placeholder', encodeURIComponent(config.placeholder));
+            
+            iframe.src = embedUrl.toString();
+            iframe.style.width = config.width;
+            iframe.style.height = config.height;
+            iframe.style.border = 'none';
+            iframe.style.borderRadius = config.borderRadius;
+            iframe.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+            iframe.style.transition = 'all 0.3s ease';
+            iframe.allow = 'encrypted-media';
+            iframe.title = config.title + ' - AI Assistant';
+            iframe.loading = 'lazy';
+
+            let isMinimized = true;
+            const toggleBtn = document.createElement('button');
+            toggleBtn.innerHTML = '💬';
+            toggleBtn.style.position = 'absolute';
+            toggleBtn.style.top = '10px';
+            toggleBtn.style.right = '10px';
+            toggleBtn.style.background = config.primaryColor;
+            toggleBtn.style.color = 'white';
+            toggleBtn.style.border = 'none';
+            toggleBtn.style.borderRadius = '50%';
+            toggleBtn.style.width = '50px';
+            toggleBtn.style.height = '50px';
+            toggleBtn.style.cursor = 'pointer';
+            toggleBtn.style.fontSize = '20px';
+            toggleBtn.style.zIndex = '10000';
+            toggleBtn.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+            toggleBtn.style.transition = 'all 0.3s ease';
+            
+            toggleBtn.onmouseover = function() {
+                toggleBtn.style.transform = 'scale(1.1)';
+            };
+            toggleBtn.onmouseout = function() {
+                toggleBtn.style.transform = 'scale(1)';
+            };
+            
+            toggleBtn.onclick = function() {
+                if (isMinimized) {
+                    iframe.style.height = config.height;
+                    iframe.style.opacity = '1';
+                    iframe.style.transform = 'scale(1)';
+                    toggleBtn.innerHTML = '−';
+                    widgetWrapper.appendChild(iframe);
+                } else {
+                    iframe.style.height = '0px';
+                    iframe.style.opacity = '0';
+                    iframe.style.transform = 'scale(0.8)';
+                    toggleBtn.innerHTML = '💬';
+                    if (iframe.parentNode) {
+                        iframe.parentNode.removeChild(iframe);
+                    }
+                }
+                isMinimized = !isMinimized;
+            };
+            
+            widgetWrapper.appendChild(toggleBtn);
+            
+            // Start minimized
+            iframe.style.height = '0px';
+            iframe.style.opacity = '0';
+            iframe.style.transform = 'scale(0.8)';
+
+            container.appendChild(widgetWrapper);
+        }
+    })();
+    </script>
+</body>
+</html> 

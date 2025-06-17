@@ -16,6 +16,8 @@ export interface Agent {
   description: string;
   status: 'Active' | 'Inactive' | 'Draft';
   created: string;
+  lastUpdated?: string;
+  avatar?: string;
   config: {
     personality: {
       traits: string[];
@@ -24,7 +26,20 @@ export interface Agent {
     };
     knowledgeBase: {
       documents: string[];
-      sources: string[];
+      sources: Array<{
+        type: 'Manual' | 'URL' | 'Document' | 'API' | 'Database';
+        content: string;
+        url?: string;
+        metadata?: {
+          fileName?: string;
+          fileSize?: number;
+          fileType?: string;
+          apiEndpoint?: string;
+          hasApiKey?: boolean;
+          database?: string;
+          query?: string;
+        };
+      }>;
       context: string;
     };
     behavior: {
@@ -33,7 +48,7 @@ export interface Agent {
       escalationRules: string[];
     };
     appearance: {
-      avatar: string;
+      avatar?: string;
       theme: string;
       welcomeMessage: string;
     };
@@ -44,25 +59,76 @@ export interface Agent {
 export interface AgentFormData {
   name: string;
   description: string;
+  category: string;
+  isPublic: boolean;
   personality: {
     traits: string[];
     tone: string;
     responseStyle: string;
+    communicationStyle: 'Conversational' | 'Creative' | 'Educational' | 'Professional' | 'Technical';
+    responsePattern: 'Concise' | 'Detailed' | 'Narrative' | 'Structured';
   };
   knowledgeBase: {
     documents: string[];
-    sources: string[];
+    sources: Array<{
+      type: 'Manual' | 'URL' | 'Document' | 'API' | 'Database';
+      content: string;
+      url?: string;
+      metadata?: {
+        fileName?: string;
+        fileSize?: number;
+        fileType?: string;
+        apiEndpoint?: string;
+        hasApiKey?: boolean;
+        database?: string;
+        query?: string;
+      };
+    }>;
     context: string;
   };
   behavior: {
     maxResponseLength: number;
     conversationMemory: boolean;
     escalationRules: string[];
+    temperature: number;
+    creativity: number;
+    topP: number;
+    contextWindow: number;
+    maxTokens: number;
+    frequencyPenalty: number;
+    presencePenalty: number;
+    systemPromptTemplate: string;
   };
   appearance: {
     avatar: string;
     theme: string;
     welcomeMessage: string;
+    primaryColor: string;
+    secondaryColor: string;
+    accentColor: string;
+    borderRadius: string;
+    customCSS: string;
+    fontFamily: string;
+    fontSize: string;
+  };
+  contextSettings: {
+    enableLearning: boolean;
+    enableMemory: boolean;
+    maxContextMessages: number;
+    memoryDuration: number;
+  };
+  integrationSettings: {
+    allowedOrigins: string[];
+    rateLimiting: {
+      enabled: boolean;
+      maxRequestsPerHour: number;
+      maxTokensPerHour: number;
+    };
+    webhooks: Array<{
+      enabled: boolean;
+      events: string[];
+      url: string;
+    }>;
   };
 }
 
@@ -146,4 +212,40 @@ export interface Tab {
   name: string;
   icon: React.ComponentType<{ className?: string }>;
   disabled?: boolean;
+}
+
+// Navigation types for enterprise sidebar
+export interface NavigationItem {
+  id: string;
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  current: boolean;
+  disabled?: boolean;
+  count?: number;
+}
+
+// Analytics types
+export interface AnalyticsData {
+  totalAgents: Array<{
+    agentId: string;
+    agentName: string;
+    messages: number;
+    conversations: number;
+    avgResponseTime: number;
+    satisfaction: number;
+  }>;
+  totalMessages: Array<{
+    date: string;
+    count: number;
+  }>;
+  activeUsers: Array<{
+    date: string;
+    count: number;
+  }>;
+  systemUptime: number;
+  averageResponseTime: Array<{
+    date: string;
+    time: number;
+  }>;
+  errorRate: number;
 } 
