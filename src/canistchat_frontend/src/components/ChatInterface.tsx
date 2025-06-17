@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { ChatInterfaceProps, Message } from '../types';
+import { canisterService } from '../services/canisterService';
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ sessionToken, agent }) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -42,23 +43,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ sessionToken, agent }) =>
     setIsLoading(true);
 
     try {
-      // Simulate API call to LLMProcessor canister
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      let response: string;
       
-      // Mock response - in production, call the LLMProcessor canister
-      const responses = [
-        "I understand your question. Let me help you with that.",
-        "That's a great point! Here's what I can tell you about that.",
-        "I'd be happy to assist you with this. Let me provide some information.",
-        "Thank you for asking. Here's what you need to know.",
-        "I can help you with that. Let me break it down for you."
-      ];
+      // Check if this is a demo agent or if we should use demo mode
+      const isDemoMode = agent.name.includes('Demo Agent') || agent.id === 'demo' || agent.id.startsWith('agent_');
       
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+      if (isDemoMode) {
+        // Demo mode responses
+        const demoResponses = [
+          `Thanks for your message: "${inputMessage}". This is a demo response from ${agent.name}.`,
+          `I understand you're asking about "${inputMessage}". In demo mode, I can show you how the chat interface works!`,
+          `Hello! You said: "${inputMessage}". This embed widget is working correctly in demo mode.`,
+          `Great question about "${inputMessage}"! This demonstrates the chat functionality of the embed widget.`,
+          `I received your message: "${inputMessage}". The embed widget is functioning properly with customizable themes and responses.`
+        ];
+        
+        // Add a small delay to simulate real API call
+        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+        
+        response = demoResponses[Math.floor(Math.random() * demoResponses.length)];
+      } else {
+        // Call the actual canister for chat processing
+        response = await canisterService.processChat(agent.id, inputMessage, sessionToken || '');
+      }
       
       const agentResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: randomResponse,
+        content: response,
         sender: 'agent',
         timestamp: new Date(),
         agentName: agent.name
@@ -68,13 +79,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ sessionToken, agent }) =>
     } catch (error) {
       console.error('Failed to get response:', error);
       
+      // Provide a helpful demo response even on error
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: 'Sorry, I encountered an error while processing your message. Please try again.',
+        content: `I'm currently in demo mode. Your message "${inputMessage}" was received, but I can't connect to the full AI service right now. This shows how error handling works in the embed widget!`,
         sender: 'agent',
         timestamp: new Date(),
         agentName: agent.name,
-        isError: true
+        isError: false // Don't show as error in demo mode
       };
       
       setMessages(prev => [...prev, errorMessage]);

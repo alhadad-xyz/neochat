@@ -45,13 +45,13 @@ actor AuthProxy {
     
     // Helper functions
     private func generateSessionId(userId: UserId): SessionId {
-        let now = Time.now();
-        Principal.toText(userId) # "_" # Int.toText(now);
+        let _now = Time.now();
+        Principal.toText(userId) # "_" # Int.toText(_now);
     };
     
     private func isSessionValid(session: UserSession): Bool {
-        let now = Time.now();
-        session.expiresAt > now;
+        let _now = Time.now();
+        session.expiresAt > _now;
     };
     
     // Public API
@@ -64,14 +64,14 @@ actor AuthProxy {
         };
         
         let sessionId = generateSessionId(caller);
-        let now = Time.now();
+        let _now = Time.now();
         
         let session: UserSession = {
             userId = caller;
             sessionId = sessionId;
-            created = now;
-            lastActive = now;
-            expiresAt = now + SESSION_DURATION;
+            created = _now;
+            lastActive = _now;
+            expiresAt = _now + SESSION_DURATION;
         };
         
         sessions.put(sessionId, session);
@@ -97,11 +97,11 @@ actor AuthProxy {
         switch (sessions.get(sessionId)) {
             case (?session) {
                 if (isSessionValid(session)) {
-                    let now = Time.now();
+                    let _now = Time.now();
                     let refreshedSession: UserSession = {
                         session with
-                        lastActive = now;
-                        expiresAt = now + SESSION_DURATION;
+                        lastActive = _now;
+                        expiresAt = _now + SESSION_DURATION;
                     };
                     sessions.put(sessionId, refreshedSession);
                     #ok(());
@@ -133,5 +133,24 @@ actor AuthProxy {
     
     public func test(): async Text {
         "AuthProxy canister is running!";
+    };
+
+    public func healthCheck(): async {
+        status: Text;
+        activeSessions: Nat;
+    } {
+        // Count active (non-expired) sessions
+        let _now = Time.now();
+        var activeCount = 0;
+        for ((_, session) in sessions.entries()) {
+            if (isSessionValid(session)) {
+                activeCount += 1;
+            };
+        };
+        
+        {
+            status = "Auth Proxy operational";
+            activeSessions = activeCount;
+        }
     };
 } 

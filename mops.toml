@@ -1,0 +1,4 @@
+[dependencies]
+base = "0.14.9"
+json = "1.2.1"
+llm = "2.0.1"

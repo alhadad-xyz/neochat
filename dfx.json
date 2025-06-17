@@ -1,10 +1,21 @@
 {
   "canisters": {
+    "llm": {
+      "type": "pull",
+      "id": "w36hm-eqaaa-aaaal-qr76a-cai"
+    },
+    "internet_identity": {
+      "type": "pull",
+      "id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+    },
     "agent_manager": {
       "type": "motoko",
       "main": "src/canistchat_backend/agent_manager/main.mo"
     },
     "llm_processor": {
+      "dependencies": [
+        "llm"
+      ],
       "type": "motoko",
       "main": "src/canistchat_backend/llm_processor/main.mo"
     },
@@ -32,18 +43,18 @@
     "local": {
       "bind": "127.0.0.1:4943",
       "type": "ephemeral"
-    },
-    "ic": {
-      "providers": ["https://ic0.app"],
-      "type": "persistent"
     }
   },
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "mops sources"
+    },
+    "replica": {
+      "subnet_type": "system"
     }
   },
   "output_env_file": ".env",
-  "version": 1
+  "version": 1,
+  "dfx": "0.25.0"
 } 

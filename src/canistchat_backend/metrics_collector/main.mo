@@ -252,4 +252,16 @@ actor MetricsCollector {
     public func test(): async Text {
         "MetricsCollector canister is running!";
     };
+
+    public func healthCheck(): async {
+        status: Text;
+        totalUsers: Nat;
+        totalTransactions: Nat;
+    } {
+        {
+            status = "Metrics Collector operational";
+            totalUsers = userBalances.size();
+            totalTransactions = usageRecords.size();
+        }
+    };
 } 

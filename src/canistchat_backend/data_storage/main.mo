@@ -198,4 +198,16 @@ actor DataStorage {
     public func test(): async Text {
         "DataStorage canister is running!";
     };
+
+    public func healthCheck(): async {
+        status: Text;
+        totalConversations: Nat;
+        totalMessages: Nat;
+    } {
+        {
+            status = "Data Storage operational";
+            totalConversations = conversations.size();
+            totalMessages = messages.size();
+        }
+    };
 } 

@@ -26,5 +26,8 @@
   "workspaces": [
     "src/canistchat_frontend",
     "src/sdk"
-  ]
-} 
+  ],
+  "devDependencies": {
+    "@types/node": "^24.0.3"
+  }
+}
