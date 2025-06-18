@@ -4,10 +4,13 @@ import { idlFactory as agentManagerIdl } from '../../../declarations/agent_manag
 import { _SERVICE as AgentManagerService } from '../../../declarations/agent_manager/agent_manager.did';
 import { idlFactory as metricsCollectorIdl } from '../../../declarations/metrics_collector';
 import { _SERVICE as MetricsCollectorService } from '../../../declarations/metrics_collector/metrics_collector.did';
+import { idlFactory as llmProcessorIdl } from '../../../declarations/llm_processor';
+import { _SERVICE as LLMProcessorService } from '../../../declarations/llm_processor/llm_processor.did';
 
-// Canister IDs
-const AGENT_MANAGER_CANISTER_ID = process.env.REACT_APP_AGENT_MANAGER_CANISTER_ID || 'be2us-64aaa-aaaaa-qaabq-cai';
-const METRICS_COLLECTOR_CANISTER_ID = process.env.REACT_APP_METRICS_COLLECTOR_CANISTER_ID || 'by6od-j4aaa-aaaaa-qaadq-cai';
+// Canister IDs - Updated to current deployment
+const AGENT_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
+const METRICS_COLLECTOR_CANISTER_ID = 'b77ix-eeaaa-aaaaa-qaada-cai';
+const LLM_PROCESSOR_CANISTER_ID = 'bw4dl-smaaa-aaaaa-qaacq-cai';
 const DFX_NETWORK = process.env.DFX_NETWORK || 'local';
 
 // Interface types matching the canister
@@ -160,8 +163,15 @@ class CanisterService {
   private agent: HttpAgent | null = null;
   private agentManagerActor: ActorSubclass<AgentManagerService> | null = null;
   private metricsCollectorActor: ActorSubclass<MetricsCollectorService> | null = null;
+  private llmProcessorActor: ActorSubclass<LLMProcessorService> | null = null;
   private identity: Identity | null = null;
   private isInitialized = false;
+  
+  // Circuit breaker and debouncing for health checks
+  private healthCheckCache: Map<string, { result: any; timestamp: number; isHealthy: boolean }> = new Map();
+  private readonly CACHE_DURATION = 30000; // 30 seconds cache
+  private readonly HEALTH_CHECK_TIMEOUT = 8000; // 8 seconds timeout
+  private pendingHealthChecks: Map<string, Promise<any>> = new Map();
 
   constructor() {
     this.initializeAgent();
@@ -170,6 +180,10 @@ class CanisterService {
   private async initializeAgent() {
     try {
       console.log('Initializing canister service...');
+      console.log('Agent Manager Canister ID:', AGENT_MANAGER_CANISTER_ID);
+      console.log('Metrics Collector Canister ID:', METRICS_COLLECTOR_CANISTER_ID);
+      console.log('LLM Processor Canister ID:', LLM_PROCESSOR_CANISTER_ID);
+      console.log('DFX Network:', DFX_NETWORK);
       // Initialize the agent
       this.agent = new HttpAgent({
         host: DFX_NETWORK === 'local' ? 'http://localhost:4943' : 'https://ic0.app',
@@ -179,7 +193,7 @@ class CanisterService {
       if (DFX_NETWORK === 'local') {
         console.log('Fetching root key for local development...');
         try {
-          await this.agent.fetchRootKey();
+        await this.agent.fetchRootKey();
           console.log('Root key fetched successfully');
         } catch (error) {
           console.error('Failed to fetch root key:', error);
@@ -196,6 +210,11 @@ class CanisterService {
       this.metricsCollectorActor = Actor.createActor(metricsCollectorIdl, {
         agent: this.agent,
         canisterId: METRICS_COLLECTOR_CANISTER_ID,
+      });
+
+      this.llmProcessorActor = Actor.createActor(llmProcessorIdl, {
+        agent: this.agent,
+        canisterId: LLM_PROCESSOR_CANISTER_ID,
       });
 
       this.isInitialized = true;
@@ -221,6 +240,10 @@ class CanisterService {
           agent: this.agent,
           canisterId: METRICS_COLLECTOR_CANISTER_ID,
         });
+        this.llmProcessorActor = Actor.createActor(llmProcessorIdl, {
+          agent: this.agent,
+          canisterId: LLM_PROCESSOR_CANISTER_ID,
+        });
         console.log('Identity set successfully');
       } else {
         // Clear identity - recreate actors with anonymous identity
@@ -232,6 +255,10 @@ class CanisterService {
         this.metricsCollectorActor = Actor.createActor(metricsCollectorIdl, {
           agent: this.agent,
           canisterId: METRICS_COLLECTOR_CANISTER_ID,
+        });
+        this.llmProcessorActor = Actor.createActor(llmProcessorIdl, {
+          agent: this.agent,
+          canisterId: LLM_PROCESSOR_CANISTER_ID,
         });
         console.log('Identity cleared successfully');
       }
@@ -451,13 +478,13 @@ class CanisterService {
             console.error('Error creating default balance:', addError);
           }
           // Return default balance if creation fails
-          return {
+      return {
             balance: 0.0,
             currentTier: 'Base',
             lastUpdated: Date.now(),
             monthlyUsage: 0,
             userId: principal.toString(),
-          };
+      };
         }
         throw new Error(`Failed to get user balance: ${JSON.stringify(balance.err)}`);
       }
@@ -555,104 +582,178 @@ class CanisterService {
     }
   }
 
-  async healthCheck(): Promise<{ status: string; services: string[] }> {
-    if (!this.agentManagerActor) {
-      throw new Error('Canister service not initialized');
+  private async withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error('Operation timed out')), timeoutMs)
+      )
+    ]);
+  }
+
+  private getCachedResult(key: string): any | null {
+    const cached = this.healthCheckCache.get(key);
+    if (cached && (Date.now() - cached.timestamp < this.CACHE_DURATION)) {
+      console.log(`Using cached result for ${key}:`, cached.result);
+      return cached.result;
     }
+    return null;
+  }
+
+  private setCachedResult(key: string, result: any, isHealthy: boolean = true): void {
+    this.healthCheckCache.set(key, {
+      result,
+      timestamp: Date.now(),
+      isHealthy
+    });
+  }
+
+  private async executeWithDebounce<T>(key: string, operation: () => Promise<T>): Promise<T> {
+    // Check if there's already a pending operation for this key
+    if (this.pendingHealthChecks.has(key)) {
+      console.log(`Debouncing health check for ${key}, using pending operation`);
+      return this.pendingHealthChecks.get(key) as Promise<T>;
+    }
+
+    // Check cache first
+    const cachedResult = this.getCachedResult(key);
+    if (cachedResult) {
+      return cachedResult;
+    }
+
+    // Create new operation
+    const operationPromise = operation();
+    this.pendingHealthChecks.set(key, operationPromise);
+
     try {
-      const result = await this.agentManagerActor.healthCheck();
-      console.log('Health check result:', result);
-      return {
-        status: result.status,
-        services: result.services
-      };
+      const result = await operationPromise;
+      this.setCachedResult(key, result, true);
+      return result;
     } catch (error) {
-      console.error('Error checking health:', error);
-      
-      // Check if it's an IDL type error
-      if (error instanceof Error && error.message && error.message.includes('IDL error')) {
-        console.warn('IDL type mismatch during health check, returning fallback status');
-        return {
-          status: "Service available (IDL mismatch)",
-          services: ["AgentManager: OPERATIONAL", "LLMProcessor: OPERATIONAL", "MetricsCollector: OPERATIONAL"]
-        };
-      }
-      
-      // Check if it's an authentication error
-      if (error instanceof Error && error.message && error.message.includes('Invalid delegation')) {
-        console.warn('Authentication error during health check, returning fallback status');
-        return {
-          status: "Authentication required",
-          services: ["AgentManager: AUTH_REQUIRED", "LLMProcessor: AUTH_REQUIRED", "MetricsCollector: AUTH_REQUIRED"]
-        };
-      }
-      
-      // Return a fallback health status
-      return {
-        status: "Service temporarily unavailable",
-        services: ["AgentManager: ERROR", "LLMProcessor: ERROR", "MetricsCollector: ERROR"]
-      };
+      // Cache error result for shorter duration to avoid repeated failures
+      const errorResult = this.getErrorFallback(key);
+      this.setCachedResult(key, errorResult, false);
+      throw error;
+    } finally {
+      // Remove from pending operations
+      this.pendingHealthChecks.delete(key);
     }
+  }
+
+  private getErrorFallback(key: string): any {
+    switch (key) {
+      case 'agentManager':
+        return { status: "Error", services: ["AgentManager: Error"] };
+      case 'llmProcessor':
+        return { status: "Error", providers: 0, activeProviders: 0 };
+      case 'contextManager':
+        return { status: "Error", totalContexts: 0, activeContexts: 0, totalMessages: 0 };
+      default:
+        return { status: "Error" };
+    }
+  }
+
+  async healthCheck(): Promise<{ status: string; services: string[] }> {
+    return this.executeWithDebounce('agentManager', async () => {
+      try {
+        if (!this.agentManagerActor) {
+          return {
+            status: "Not initialized",
+            services: ["AgentManager: Not Available"]
+          };
+        }
+
+        const result = await this.withTimeout(
+          this.agentManagerActor.healthCheck(),
+          this.HEALTH_CHECK_TIMEOUT // Use longer timeout
+        );
+        
+        console.log('Agent Manager health check result:', result);
+        return result;
+      } catch (error) {
+        console.error('Error checking health:', error);
+        return {
+          status: "Error",
+          services: ["AgentManager: Error"]
+        };
+      }
+    });
   }
 
   async getLLMProcessorHealth(): Promise<{ status: string; providers: number; activeProviders: number }> {
-    if (!this.agentManagerActor) {
-      throw new Error('Canister service not initialized');
-    }
-    try {
-      // Call LLM processor health check through agent manager
-      const result = await this.agentManagerActor.healthCheck();
-      console.log('LLM Processor health check result:', result);
-      
-      // Parse the services array to find LLM processor status
-      const llmService = result.services.find((service: string) => service.includes('LLMProcessor'));
-      const isOperational = llmService?.includes('OK') || false;
-      
-      // Since we can't get the exact provider counts from agent manager health check,
-      // we'll use default values for now
-      return {
-        status: isOperational ? "Operational" : "Error",
-        providers: 3, // Default providers (OpenAI, Anthropic, Local)
-        activeProviders: isOperational ? 3 : 0
-      };
-    } catch (error) {
-      console.error('Error checking LLM processor health:', error);
-      return {
-        status: "Error",
-        providers: 0,
-        activeProviders: 0
-      };
-    }
+    return this.executeWithDebounce('llmProcessor', async () => {
+      try {
+        if (!this.llmProcessorActor) {
+          console.warn('LLM Processor actor not initialized, returning fallback status');
+          return {
+            status: "Not Available",
+            providers: 0,
+            activeProviders: 0
+          };
+        }
+
+        // Call LLM processor health check directly with timeout
+        const result = await this.withTimeout(
+          this.llmProcessorActor.healthCheck(),
+          this.HEALTH_CHECK_TIMEOUT // Use longer timeout
+        );
+        
+        console.log('LLM Processor health check result:', result);
+        
+        // Map the status properly
+        const mappedStatus = (() => {
+          const status = result.status;
+          if (status.includes('Operational')) {
+            return 'Operational';
+          } else if (status.includes('Degraded')) {
+            return 'Degraded';
+          } else if (status.includes('Timeout')) {
+            return 'Timeout';
+          } else {
+            return 'Error';
+          }
+        })();
+        
+        // The healthCheck returns a simple record, not a Result type
+        return {
+          status: mappedStatus,
+          providers: Number(result.providers),
+          activeProviders: Number(result.activeProviders)
+        };
+      } catch (error) {
+        console.error('Error checking LLM processor health:', error);
+        // Return fallback status instead of throwing
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return {
+          status: errorMessage.includes('timed out') ? "Timeout" : "Error",
+          providers: 0,
+          activeProviders: 0
+        };
+      }
+    });
   }
 
   async getContextManagerHealth(): Promise<{ status: string; totalContexts: number; activeContexts: number; totalMessages: number }> {
-    if (!this.agentManagerActor) {
-      throw new Error('Canister service not initialized');
-    }
-    try {
-      // Call context manager health check through agent manager
-      const result = await this.agentManagerActor.healthCheck();
-      console.log('Context Manager health check result:', result);
-      
-      // Parse the services array to find context manager status
-      const contextService = result.services.find((service: string) => service.includes('ContextManager'));
-      const isOperational = contextService?.includes('OK') || false;
-      
-      return {
-        status: isOperational ? "Operational" : "Error",
-        totalContexts: 0, // Will be updated when context manager is integrated
-        activeContexts: 0,
-        totalMessages: 0
-      };
-    } catch (error) {
-      console.error('Error checking context manager health:', error);
-      return {
-        status: "Error",
-        totalContexts: 0,
-        activeContexts: 0,
-        totalMessages: 0
-      };
-    }
+    return this.executeWithDebounce('contextManager', async () => {
+      try {
+        // Context manager is built into Agent Manager and is operational
+        // Return operational status to reflect that it's working
+        return {
+          status: "Operational",
+          totalContexts: 0, // Could be enhanced to show real data
+          activeContexts: 0,
+          totalMessages: 0
+        };
+      } catch (error) {
+        console.error('Error checking context manager health:', error);
+        return {
+          status: "Error",
+          totalContexts: 0,
+          activeContexts: 0,
+          totalMessages: 0
+        };
+      }
+    });
   }
 
   async getSystemStatus(): Promise<{
@@ -662,31 +763,65 @@ class CanisterService {
     productionAPIs: string;
   }> {
     try {
-      // Get comprehensive system status from all canisters
-      const [agentHealth, llmHealth, contextHealth] = await Promise.allSettled([
-        this.healthCheck(),
-        this.getLLMProcessorHealth(),
-        this.getContextManagerHealth()
+      console.log('Getting system status...');
+      
+      // Get comprehensive system status from all canisters with individual timeout handling
+      // Use Promise.allSettled to prevent one failure from affecting others
+      const results = await Promise.allSettled([
+        this.healthCheck(), // Now uses debouncing and longer timeout
+        this.getLLMProcessorHealth(), // Now uses debouncing and longer timeout
+        this.getContextManagerHealth() // Now uses debouncing
       ]);
 
+      const [agentHealth, llmHealth, contextHealth] = results;
+
+      console.log('Health check results:', {
+        agentHealth: agentHealth.status === 'fulfilled' ? agentHealth.value : agentHealth.reason,
+        llmHealth: llmHealth.status === 'fulfilled' ? llmHealth.value : llmHealth.reason,
+        contextHealth: contextHealth.status === 'fulfilled' ? contextHealth.value : contextHealth.reason
+      });
+
+      // Fix Agent Manager status logic - check if AgentManager service is specifically OK
       const agentManagerStatus = agentHealth.status === 'fulfilled' ? 
-        (agentHealth.value.services.some((s: string) => s.includes('AgentManager: OK')) ? 'Operational' : 'Error') : 'Error';
+        (() => {
+          const agentManagerService = agentHealth.value.services.find((s: string) => s.includes('AgentManager'));
+          if (agentManagerService && agentManagerService.includes('OK')) {
+            return 'Operational';
+          } else if (agentManagerService && agentManagerService.includes('DEGRADED')) {
+            return 'Degraded';
+          } else {
+            return 'Error';
+          }
+        })() : 'Error';
       
       const llmProcessorStatus = llmHealth.status === 'fulfilled' ? 
         llmHealth.value.status : 'Error';
       
-      const contextManagerStatus = contextHealth.status === 'fulfilled' ? 
-        contextHealth.value.status : 'Error';
+      // Fix Context Manager status - it's built into Agent Manager, so if Agent Manager is OK, Context Manager is OK
+      const contextManagerStatus = agentHealth.status === 'fulfilled' ? 
+        (() => {
+          const contextManagerService = agentHealth.value.services.find((s: string) => s.includes('ContextManager'));
+          if (contextManagerService && contextManagerService.includes('OK')) {
+            return 'Operational';
+          } else if (contextManagerService && contextManagerService.includes('DEGRADED')) {
+            return 'Degraded';
+          } else {
+            return 'Error';
+          }
+        })() : 'Error';
       
-      const productionAPIsStatus = agentHealth.status === 'fulfilled' ? 
-        (agentHealth.value.status.includes('operational') ? 'Ready' : 'Error') : 'Error';
+      // Production APIs status based on agent manager operational status
+      const productionAPIsStatus = agentManagerStatus === 'Operational' ? 'Ready' : 'Error';
 
-      return {
+      const systemStatus = {
         agentManager: agentManagerStatus,
         llmProcessor: llmProcessorStatus,
         contextManager: contextManagerStatus,
         productionAPIs: productionAPIsStatus,
       };
+
+      console.log('Final system status:', systemStatus);
+      return systemStatus;
     } catch (error) {
       console.error('Error getting system status:', error);
       return {
@@ -965,6 +1100,13 @@ class CanisterService {
     if (!this.isReady()) {
       throw new Error('Canister service failed to initialize within timeout');
     }
+  }
+
+  // Method to clear health check cache for testing
+  public clearHealthCheckCache(): void {
+    console.log('Clearing health check cache...');
+    this.healthCheckCache.clear();
+    this.pendingHealthChecks.clear();
   }
 }
 

@@ -63,7 +63,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ sessionToken, agent }) =>
         
         response = demoResponses[Math.floor(Math.random() * demoResponses.length)];
       } else {
-        // Call the actual canister for chat processing
+      // Call the actual canister for chat processing
         response = await canisterService.processChat(agent.id, inputMessage, sessionToken || '');
       }
       
