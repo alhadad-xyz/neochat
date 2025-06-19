@@ -361,6 +361,13 @@ const AgentCreator: React.FC<AgentCreatorProps> = ({ sessionToken, onAgentCreate
       const agentId = await canisterService.createAgent(agentRequest, 1);
       console.log('Agent created successfully with ID:', agentId);
       
+      // Catat transaksi agent creation di metrics collector (otomatis masuk usage history)
+      try {
+        await canisterService.recordAgentCreationUsage(agentId);
+      } catch (err) {
+        console.error('Gagal mencatat usage agent creation:', err);
+      }
+      
       // Buat objek agent baru untuk dikirim ke onAgentCreated
       const newAgent = {
         id: agentId,

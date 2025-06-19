@@ -62,6 +62,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [notifications] = useState(3); // Mock notification count
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0);
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -173,6 +174,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               onAgentCreated={(agent) => {
                 onSelectAgent(agent);
                 onNavigate('agents');
+                setAnalyticsRefreshKey(prev => prev + 1);
               }}
             />
           </div>
@@ -211,6 +213,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <Analytics 
               sessionToken={sessionToken}
               selectedAgent={selectedAgent}
+              refreshKey={analyticsRefreshKey}
             />
           </div>
         );
