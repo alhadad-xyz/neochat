@@ -175,7 +175,7 @@ export interface UsageData {
 // Component prop types
 export interface AgentCreatorProps {
   sessionToken: string | null;
-  onAgentCreated: () => void;
+  onAgentCreated: (agent: Agent) => void;
 }
 
 export interface AgentListProps {

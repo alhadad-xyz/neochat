@@ -1,0 +1,79 @@
+type UserId = principal;
+type UserBalance = 
+ record {
+   balance: float64;
+   currentTier: PricingTier;
+   lastUpdated: Time;
+   monthlyUsage: nat;
+   userId: UserId;
+ };
+type UsageRecord = 
+ record {
+   agentId: AgentId;
+   cost: float64;
+   id: UsageId;
+   operation: OperationType;
+   timestamp: Time;
+   tokens: nat;
+   userId: UserId;
+ };
+type UsageId = text;
+type Time = int;
+type Result_2 = 
+ variant {
+   err: Error;
+   ok;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok: UserBalance;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok: UsageId;
+ };
+type PricingTier = 
+ variant {
+   Base;
+   Enterprise;
+   Professional;
+   Standard;
+ };
+type OperationType = 
+ variant {
+   AddBalance;
+   AgentCreation;
+   CustomPromptTraining;
+   DocumentUpload;
+   MessageProcessing: FeatureType;
+ };
+type FeatureType = 
+ variant {
+   AdvancedPrompts;
+   BasicChat;
+   ChainFusion;
+   DocumentIntegration;
+ };
+type Error = 
+ variant {
+   InsufficientBalance;
+   InternalError: text;
+   InvalidUsage;
+   UserNotFound;
+ };
+type AgentId = text;
+service : {
+  addBalance: (UserId, float64) -> (Result_2);
+  getUsageHistory: (UserId, opt nat) -> (vec UsageRecord) query;
+  getUserBalance: (UserId) -> (Result_1) query;
+  healthCheck: () ->
+   (record {
+      status: text;
+      totalTransactions: nat;
+      totalUsers: nat;
+    });
+  recordUsage: (UserId, AgentId, nat, OperationType) -> (Result);
+  test: () -> (text);
+}

@@ -358,8 +358,41 @@ const AgentCreator: React.FC<AgentCreatorProps> = ({ sessionToken, onAgentCreate
       console.log('Creating agent with canister:', agentRequest);
       
       // Call the actual canister
-      const agentId = await canisterService.createAgent(agentRequest);
+      const agentId = await canisterService.createAgent(agentRequest, 1);
       console.log('Agent created successfully with ID:', agentId);
+      
+      // Buat objek agent baru untuk dikirim ke onAgentCreated
+      const newAgent = {
+        id: agentId,
+        name: formData.name,
+        description: formData.description,
+        status: 'Active' as 'Active',
+        created: new Date().toISOString(),
+        config: {
+          personality: {
+            traits: formData.personality.traits,
+            tone: formData.personality.tone,
+            responseStyle: formData.personality.responseStyle,
+          },
+          knowledgeBase: {
+            documents: formData.knowledgeBase.documents,
+            sources: formData.knowledgeBase.sources,
+            context: formData.knowledgeBase.context,
+          },
+          behavior: {
+            maxResponseLength: formData.behavior.maxResponseLength,
+            conversationMemory: formData.behavior.conversationMemory,
+            escalationRules: formData.behavior.escalationRules,
+          },
+          appearance: {
+            avatar: formData.appearance.avatar,
+            theme: formData.appearance.theme,
+            welcomeMessage: formData.appearance.welcomeMessage,
+          },
+        },
+        avatar: formData.appearance.avatar,
+        lastUpdated: new Date().toISOString(),
+      };
       
       // Reset form
       setFormData({
@@ -375,7 +408,7 @@ const AgentCreator: React.FC<AgentCreatorProps> = ({ sessionToken, onAgentCreate
         isPublic: false
       });
       
-      onAgentCreated();
+      onAgentCreated(newAgent);
     } catch (error) {
       console.error('Failed to create agent:', error);
       setError(error instanceof Error ? error.message : 'Failed to create agent');

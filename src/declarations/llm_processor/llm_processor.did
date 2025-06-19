@@ -1,0 +1,83 @@
+type Time = int;
+type Result_1 = 
+ variant {
+   err: Error;
+   ok: ProcessMessageResponse;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok: text;
+ };
+type ProcessMessageResponse = 
+ record {
+   agentResponse: text;
+   cached: bool;
+   confidence: float64;
+   messageId: MessageId;
+   metadata: vec record {
+                   text;
+                   text;
+                 };
+   modelUsed: text;
+   processingTime: nat;
+   providerId: text;
+   tokens: nat;
+ };
+type ProcessMessageRequest = 
+ record {
+   agentId: AgentId;
+   agentPersonality: opt text;
+   context: opt vec Message;
+   conversationId: ConversationId;
+   enableStreaming: opt bool;
+   maxTokens: opt nat;
+   routingStrategy: opt text;
+   systemPrompt: opt text;
+   temperature: opt float64;
+   userMessage: text;
+ };
+type MessageId = text;
+type Message = 
+ record {
+   content: text;
+   id: MessageId;
+   metadata: vec record {
+                   text;
+                   text;
+                 };
+   role: variant {
+           Agent;
+           System;
+           User;
+         };
+   timestamp: Time;
+   tokens: nat;
+ };
+type Error = 
+ variant {
+   InvalidInput: text;
+   ProcessingError: text;
+   RateLimited;
+   ServiceUnavailable;
+ };
+type ConversationId = text;
+type AgentId = text;
+service : {
+  getProcessorStatus: () ->
+   (record {
+      healthy: bool;
+      provider: text;
+      version: text;
+    }) query;
+  healthCheck: () ->
+   (record {
+      activeProviders: nat;
+      providers: nat;
+      status: text;
+    });
+  processMessage: (ProcessMessageRequest) -> (Result_1);
+  processPrompt: (text) -> (Result);
+  processWithLLM: (text) -> (Result);
+  test: () -> (text);
+}

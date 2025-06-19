@@ -119,7 +119,7 @@ export interface UsageRecord {
   agentId: string;
   cost: number;
   id: string;
-  operation: 'AgentCreation' | 'CustomPromptTraining' | 'DocumentUpload' | 'MessageProcessing';
+  operation: any;
   timestamp: number;
   tokens: number;
   userId: string;
@@ -284,7 +284,7 @@ class CanisterService {
     return this.isInitialized && this.agentManagerActor !== null;
   }
 
-  async createAgent(agentData: CreateAgentRequest): Promise<string> {
+  async createAgent(agentData: CreateAgentRequest, creationCost: number = 1): Promise<string> {
     if (!this.agentManagerActor) {
       throw new Error('Canister service not initialized');
     }
@@ -295,6 +295,8 @@ class CanisterService {
       console.log('Creating agent with data:', agentData);
       const result = await this.agentManagerActor.createAgent(agentData);
       if ('ok' in result) {
+        // Setelah agent berhasil dibuat, potong saldo user
+        await this.addBalance(-creationCost);
         return result.ok;
       } else {
         throw new Error(`Agent creation failed: ${JSON.stringify(result.err)}`);
@@ -1107,6 +1109,20 @@ class CanisterService {
     console.log('Clearing health check cache...');
     this.healthCheckCache.clear();
     this.pendingHealthChecks.clear();
+  }
+
+  async recordAgentCreationUsage(agentId: string): Promise<void> {
+    if (!this.metricsCollectorActor) throw new Error('Canister service not initialized');
+    if (!this.identity) throw new Error('Authentication required');
+    const principal = this.identity.getPrincipal();
+    // tokens = 0, operation = { AgentCreation: null }
+    const result = await this.metricsCollectorActor.recordUsage(
+      principal,
+      agentId,
+      BigInt(0),
+      { AgentCreation: null }
+    );
+    if ('err' in result) throw new Error('Failed to record usage: ' + JSON.stringify(result.err));
   }
 }
 

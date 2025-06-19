@@ -1,0 +1,15 @@
+// Version: 1.0.0
+type SessionId = Text;
+type Time = Int;
+type UserId = Principal;
+type UserSession =
+  {
+    created : Time;
+    expiresAt : Time;
+    lastActive : Time;
+    sessionId : SessionId;
+    userId : UserId
+  };
+actor {
+  stable var sessionEntries : [(SessionId, UserSession)]
+};

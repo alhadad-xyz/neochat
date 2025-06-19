@@ -1,0 +1,130 @@
+// Version: 1.0.0
+type Agent =
+  {
+    analytics :
+      {
+        averageRating : ?Float;
+        totalConversations : Nat;
+        totalMessages : Nat;
+        totalTokensUsed : Nat
+      };
+    category : Text;
+    config : AgentConfig;
+    configHistory : [AgentConfig];
+    created : Time;
+    description : Text;
+    id : AgentId;
+    lastUsed : ?Time;
+    name : Text;
+    ownerId : UserId;
+    permissions :
+      {
+        accessLevel : {#Editor; #Owner; #Viewer};
+        allowedUsers : [UserId];
+        isPublic : Bool
+      };
+    status : AgentStatus;
+    tags : [Text];
+    updated : Time
+  };
+type AgentConfig =
+  {
+    appearance : AppearanceConfig;
+    behavior : BehaviorConfig;
+    contextSettings :
+      {
+        enableLearning : Bool;
+        enableMemory : Bool;
+        maxContextMessages : Nat;
+        memoryDuration : Nat
+      };
+    integrationSettings :
+      {
+        allowedOrigins : [Text];
+        rateLimiting :
+          {enabled : Bool; maxRequestsPerHour : Nat; maxTokensPerHour : Nat};
+        webhooks : [{enabled : Bool; events : [Text]; url : Text}]
+      };
+    knowledgeBase : [KnowledgeSource];
+    personality : PersonalityConfig;
+    version : VersionId
+  };
+type AgentId = Text;
+type AgentStatus = {#Active; #Archived; #Inactive; #Suspended};
+type AppearanceConfig =
+  {
+    accentColor : Text;
+    avatar : ?Text;
+    borderRadius : Text;
+    customCSS : ?Text;
+    fontFamily : Text;
+    fontSize : Text;
+    primaryColor : Text;
+    secondaryColor : Text;
+    theme : {#Auto; #Dark; #Light}
+  };
+type BehaviorConfig =
+  {
+    contextWindow : Nat;
+    creativity : Float;
+    frequencyPenalty : Float;
+    maxTokens : Nat;
+    presencePenalty : Float;
+    responseLength : {#Long; #Medium; #Short; #Variable};
+    systemPromptTemplate : Text;
+    temperature : Float;
+    topP : Float
+  };
+type ContextId = Text;
+type ContextMessage =
+  {
+    content : Text;
+    metadata : [(Text, Text)];
+    role : {#Assistant; #System; #User};
+    timestamp : Time;
+    tokenCount : ?Nat
+  };
+type ConversationContext =
+  {
+    agentId : AgentId;
+    compressionEnabled : Bool;
+    contextId : ContextId;
+    created : Time;
+    lastAccessed : Time;
+    maxSize : Nat;
+    messages : [ContextMessage];
+    metadata : [(Text, Text)];
+    userId : UserId
+  };
+type KnowledgeSource =
+  {
+    content : Text;
+    id : Text;
+    isActive : Bool;
+    lastUpdated : Time;
+    metadata : [(Text, Text)];
+    priority : Nat;
+    sourceType : {#API; #Database; #Document; #Manual; #URL};
+    version : VersionId
+  };
+type PersonalityConfig =
+  {
+    communicationStyle :
+      {#Conversational; #Creative; #Educational; #Professional; #Technical};
+    responsePattern : {#Concise; #Detailed; #Narrative; #Structured};
+    style : Text;
+    tone : Text;
+    traits : [Text]
+  };
+type Time = Int;
+type UserId = Principal;
+type VersionId = Nat;
+actor {
+  stable var agentEntries : [(AgentId, Agent)];
+  stable var configVersionEntries : [(Text, [AgentConfig])];
+  stable var contextEntries : [(ContextId, ConversationContext)];
+  stable var nextAgentId : Nat;
+  stable var nextContextId : Nat;
+  stable var nextVersionId : Nat;
+  stable var userAgentEntries : [(UserId, [AgentId])]
+};

@@ -1,0 +1,39 @@
+// Version: 1.0.0
+type AgentId = Text;
+type FeatureType =
+  {#AdvancedPrompts; #BasicChat; #ChainFusion; #DocumentIntegration};
+type OperationType =
+  {
+    #AddBalance;
+    #AgentCreation;
+    #CustomPromptTraining;
+    #DocumentUpload;
+    #MessageProcessing : FeatureType
+  };
+type PricingTier = {#Base; #Enterprise; #Professional; #Standard};
+type Time = Int;
+type UsageId = Text;
+type UsageRecord =
+  {
+    agentId : AgentId;
+    cost : Float;
+    id : UsageId;
+    operation : OperationType;
+    timestamp : Time;
+    tokens : Nat;
+    userId : UserId
+  };
+type UserBalance =
+  {
+    balance : Float;
+    currentTier : PricingTier;
+    lastUpdated : Time;
+    monthlyUsage : Nat;
+    userId : UserId
+  };
+type UserId = Principal;
+actor {
+  stable var balanceEntries : [(UserId, UserBalance)];
+  stable var nextUsageId : Nat;
+  stable var usageEntries : [(UsageId, UsageRecord)]
+};
