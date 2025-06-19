@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -110,4 +111,4 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate, selectedAgent }
   );
 };
 
-export default QuickActions;
+export default QuickActions
