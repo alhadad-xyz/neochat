@@ -75,3 +75,11 @@ pids
 .claude/
 CLAUDE.md
 .mops
+
+# dfx
+.dfx
+deps
+declarations
+
+# .env
+.env
