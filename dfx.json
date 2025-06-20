@@ -13,14 +13,12 @@
       "main": "src/canistchat_backend/agent_manager/main.mo"
     },
     "llm_processor": {
-      "dependencies": [
-        "llm"
-      ],
+      "dependencies": ["llm"],
       "type": "motoko",
       "main": "src/canistchat_backend/llm_processor/main.mo"
     },
     "metrics_collector": {
-      "type": "motoko", 
+      "type": "motoko",
       "main": "src/canistchat_backend/metrics_collector/main.mo"
     },
     "auth_proxy": {
@@ -32,16 +30,14 @@
       "main": "src/canistchat_backend/data_storage/main.mo"
     },
     "canistchat_frontend": {
-      "source": [
-        "src/canistchat_frontend/dist"
-      ],
+      "source": ["src/canistchat_frontend/dist"],
       "type": "assets",
       "workspace": "canistchat_frontend"
     }
   },
   "networks": {
     "local": {
-      "bind": "127.0.0.1:4943",
+      "bind": "127.0.0.1:4944",
       "type": "ephemeral"
     }
   },
@@ -57,4 +53,4 @@
   "output_env_file": ".env",
   "version": 1,
   "dfx": "0.25.0"
-} 
+}

@@ -1,17 +1,15 @@
-
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
-import { Slider } from '@/components/ui/slider';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
 
 interface FormData {
   name: string;
   description: string;
   category: string;
-  visibility: 'private' | 'public';
+  visibility: "private" | "public";
   tone: string;
   style: string;
   communicationStyle: string;
@@ -97,37 +95,22 @@ const BehaviorStep = ({ formData, setFormData }: BehaviorStepProps) => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <Checkbox
-            id="remember-conversation"
-            checked={formData.rememberConversation}
-            onCheckedChange={handleRememberConversationChange}
-            className="border-white/30 dark:border-gray-600/30"
-          />
-          <Label
-            htmlFor="remember-conversation"
-            className="text-gray-700 dark:text-gray-300 cursor-pointer"
-          >
+          <Checkbox id="remember-conversation" checked={formData.rememberConversation} onCheckedChange={handleRememberConversationChange} className="border-white/30 dark:border-gray-600/30" />
+          <Label htmlFor="remember-conversation" className="text-gray-700 dark:text-gray-300 cursor-pointer">
             Remember conversation history
           </Label>
         </div>
 
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Advanced Settings</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <Label className="text-gray-700 dark:text-gray-300">
                 Temperature
                 <span className="text-sm text-gray-500 ml-2">({formData.temperature.toFixed(1)})</span>
               </Label>
-              <Slider
-                value={[formData.temperature]}
-                onValueChange={(value) => handleSliderChange('temperature', value)}
-                max={1}
-                min={0}
-                step={0.1}
-                className="w-full"
-              />
+              <Slider value={[formData.temperature]} onValueChange={(value) => handleSliderChange("temperature", value)} max={1} min={0} step={0.1} className="w-full" />
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Focused (0.0)</span>
                 <span>Creative (1.0)</span>
@@ -139,14 +122,7 @@ const BehaviorStep = ({ formData, setFormData }: BehaviorStepProps) => {
                 Creativity
                 <span className="text-sm text-gray-500 ml-2">({formData.creativity.toFixed(1)})</span>
               </Label>
-              <Slider
-                value={[formData.creativity]}
-                onValueChange={(value) => handleSliderChange('creativity', value)}
-                max={1}
-                min={0}
-                step={0.1}
-                className="w-full"
-              />
+              <Slider value={[formData.creativity]} onValueChange={(value) => handleSliderChange("creativity", value)} max={1} min={0} step={0.1} className="w-full" />
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Conservative (0.0)</span>
                 <span>Creative (1.0)</span>
@@ -155,17 +131,9 @@ const BehaviorStep = ({ formData, setFormData }: BehaviorStepProps) => {
 
             <div className="space-y-3">
               <Label className="text-gray-700 dark:text-gray-300">
-                Top P
-                <span className="text-sm text-gray-500 ml-2">({formData.topP.toFixed(1)})</span>
+                Top P<span className="text-sm text-gray-500 ml-2">({formData.topP.toFixed(1)})</span>
               </Label>
-              <Slider
-                value={[formData.topP]}
-                onValueChange={(value) => handleSliderChange('topP', value)}
-                max={1}
-                min={0}
-                step={0.1}
-                className="w-full"
-              />
+              <Slider value={[formData.topP]} onValueChange={(value) => handleSliderChange("topP", value)} max={1} min={0} step={0.1} className="w-full" />
               <div className="flex justify-between text-xs text-gray-500">
                 <span>0.0</span>
                 <span>1.0</span>
@@ -173,23 +141,27 @@ const BehaviorStep = ({ formData, setFormData }: BehaviorStepProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="context-window" className="text-gray-700 dark:text-gray-300">Context Window</Label>
+              <Label htmlFor="context-window" className="text-gray-700 dark:text-gray-300">
+                Context Window
+              </Label>
               <Input
                 id="context-window"
                 type="number"
                 value={formData.contextWindow}
-                onChange={(e) => handleInputChange('contextWindow', parseInt(e.target.value) || 4096)}
+                onChange={(e) => handleInputChange("contextWindow", parseInt(e.target.value) || 4096)}
                 className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="max-tokens" className="text-gray-700 dark:text-gray-300">Max Tokens</Label>
+              <Label htmlFor="max-tokens" className="text-gray-700 dark:text-gray-300">
+                Max Tokens
+              </Label>
               <Input
                 id="max-tokens"
                 type="number"
                 value={formData.maxTokens}
-                onChange={(e) => handleInputChange('maxTokens', parseInt(e.target.value) || 1000)}
+                onChange={(e) => handleInputChange("maxTokens", parseInt(e.target.value) || 1000)}
                 className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30"
               />
             </div>
@@ -199,14 +171,7 @@ const BehaviorStep = ({ formData, setFormData }: BehaviorStepProps) => {
                 Frequency Penalty
                 <span className="text-sm text-gray-500 ml-2">({formData.frequencyPenalty.toFixed(1)})</span>
               </Label>
-              <Slider
-                value={[formData.frequencyPenalty]}
-                onValueChange={(value) => handleSliderChange('frequencyPenalty', value)}
-                max={2}
-                min={-2}
-                step={0.1}
-                className="w-full"
-              />
+              <Slider value={[formData.frequencyPenalty]} onValueChange={(value) => handleSliderChange("frequencyPenalty", value)} max={2} min={-2} step={0.1} className="w-full" />
               <div className="flex justify-between text-xs text-gray-500">
                 <span>-2.0</span>
                 <span>2.0</span>
@@ -218,14 +183,7 @@ const BehaviorStep = ({ formData, setFormData }: BehaviorStepProps) => {
                 Presence Penalty
                 <span className="text-sm text-gray-500 ml-2">({formData.presencePenalty.toFixed(1)})</span>
               </Label>
-              <Slider
-                value={[formData.presencePenalty]}
-                onValueChange={(value) => handleSliderChange('presencePenalty', value)}
-                max={2}
-                min={-2}
-                step={0.1}
-                className="w-full"
-              />
+              <Slider value={[formData.presencePenalty]} onValueChange={(value) => handleSliderChange("presencePenalty", value)} max={2} min={-2} step={0.1} className="w-full" />
               <div className="flex justify-between text-xs text-gray-500">
                 <span>-2.0</span>
                 <span>2.0</span>
@@ -234,12 +192,14 @@ const BehaviorStep = ({ formData, setFormData }: BehaviorStepProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="system-prompt" className="text-gray-700 dark:text-gray-300">System Prompt Template</Label>
+            <Label htmlFor="system-prompt" className="text-gray-700 dark:text-gray-300">
+              System Prompt Template
+            </Label>
             <Textarea
               id="system-prompt"
               placeholder="You are a helpful AI assistant."
               value={formData.systemPromptTemplate}
-              onChange={(e) => handleInputChange('systemPromptTemplate', e.target.value)}
+              onChange={(e) => handleInputChange("systemPromptTemplate", e.target.value)}
               className="min-h-[100px] bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30"
             />
           </div>

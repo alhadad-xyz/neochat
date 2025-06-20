@@ -1,7 +1,6 @@
-
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AgentFormData } from '@/pages/CreateAgent';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AgentFormData } from "@/pages/Dashboard";
 
 interface AgentPreviewProps {
   formData: AgentFormData;
@@ -10,14 +9,14 @@ interface AgentPreviewProps {
 const AgentPreview = ({ formData }: AgentPreviewProps) => {
   const getThemeColor = () => {
     switch (formData.theme) {
-      case 'success-green':
-        return 'from-green-500 to-green-600';
-      case 'creative-purple':
-        return 'from-purple-500 to-purple-600';
-      case 'energetic-orange':
-        return 'from-orange-500 to-orange-600';
+      case "success-green":
+        return "from-green-500 to-green-600";
+      case "creative-purple":
+        return "from-purple-500 to-purple-600";
+      case "energetic-orange":
+        return "from-orange-500 to-orange-600";
       default:
-        return 'from-blue-500 to-purple-600';
+        return "from-blue-500 to-purple-600";
     }
   };
 
@@ -28,23 +27,15 @@ const AgentPreview = ({ formData }: AgentPreviewProps) => {
         <CardContent className="p-6">
           <div className="flex items-start space-x-4">
             <div className={`w-16 h-16 bg-gradient-to-r ${getThemeColor()} rounded-full flex items-center justify-center flex-shrink-0`}>
-              <span className="text-white text-xl font-bold">
-                {formData.name ? formData.name.charAt(0).toUpperCase() : 'A'}
-              </span>
+              <span className="text-white text-xl font-bold">{formData.name ? formData.name.charAt(0).toUpperCase() : "A"}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                {formData.name || 'Agent Name'}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
-                {formData.description || 'Agent description will appear here...'}
-              </p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{formData.name || "Agent Name"}</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">{formData.description || "Agent description will appear here..."}</p>
               <div className="flex flex-wrap gap-2 text-sm mb-3">
+                <span className="bg-white/80 dark:bg-gray-800/80 px-3 py-1 rounded-full text-gray-700 dark:text-gray-300 border border-gray-200/50 dark:border-gray-600/50">Category: {formData.category}</span>
                 <span className="bg-white/80 dark:bg-gray-800/80 px-3 py-1 rounded-full text-gray-700 dark:text-gray-300 border border-gray-200/50 dark:border-gray-600/50">
-                  Category: {formData.category}
-                </span>
-                <span className="bg-white/80 dark:bg-gray-800/80 px-3 py-1 rounded-full text-gray-700 dark:text-gray-300 border border-gray-200/50 dark:border-gray-600/50">
-                  Visibility: {formData.visibility === 'private' ? 'Private' : 'Public'}
+                  Visibility: {formData.visibility === "private" ? "Private" : "Public"}
                 </span>
               </div>
             </div>
@@ -79,10 +70,7 @@ const AgentPreview = ({ formData }: AgentPreviewProps) => {
           {formData.personalityTraits.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">
               {formData.personalityTraits.map((trait, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-md"
-                >
+                <span key={index} className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-md">
                   {trait}
                 </span>
               ))}
@@ -100,24 +88,18 @@ const AgentPreview = ({ formData }: AgentPreviewProps) => {
           <div className="space-y-3">
             <div>
               <span className="text-gray-600 dark:text-gray-400 text-sm">Context:</span>
-              <p className="text-gray-900 dark:text-white mt-1">
-                {formData.context || 'None'}
-              </p>
+              <p className="text-gray-900 dark:text-white mt-1">{formData.context || "None"}</p>
             </div>
-            {formData.knowledgeSources.some(source => source.content.trim()) && (
+            {formData.knowledgeSources.some((source) => source.content.trim()) && (
               <div>
                 <span className="text-gray-600 dark:text-gray-400 text-sm">Knowledge Sources:</span>
                 <div className="mt-2 space-y-2">
                   {formData.knowledgeSources
-                    .filter(source => source.content.trim())
+                    .filter((source) => source.content.trim())
                     .map((source, index) => (
                       <div key={index} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-                        <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">
-                          {source.type}
-                        </div>
-                        <div className="text-sm text-gray-900 dark:text-white truncate">
-                          {source.content}
-                        </div>
+                        <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">{source.type}</div>
+                        <div className="text-sm text-gray-900 dark:text-white truncate">{source.content}</div>
                       </div>
                     ))}
                 </div>
@@ -140,9 +122,7 @@ const AgentPreview = ({ formData }: AgentPreviewProps) => {
             </div>
             <div>
               <span className="text-gray-600 dark:text-gray-400">Conversation Memory:</span>
-              <span className="ml-2 text-gray-900 dark:text-white">
-                {formData.rememberConversation ? 'Enabled' : 'Disabled'}
-              </span>
+              <span className="ml-2 text-gray-900 dark:text-white">{formData.rememberConversation ? "Enabled" : "Disabled"}</span>
             </div>
             <div>
               <span className="text-gray-600 dark:text-gray-400">Temperature:</span>
@@ -175,9 +155,7 @@ const AgentPreview = ({ formData }: AgentPreviewProps) => {
           </div>
           <div className="mt-4">
             <span className="text-gray-600 dark:text-gray-400 text-sm">System Prompt:</span>
-            <p className="text-gray-900 dark:text-white mt-1 text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-              {formData.systemPromptTemplate}
-            </p>
+            <p className="text-gray-900 dark:text-white mt-1 text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">{formData.systemPromptTemplate}</p>
           </div>
         </CardContent>
       </Card>
@@ -192,25 +170,14 @@ const AgentPreview = ({ formData }: AgentPreviewProps) => {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-600 dark:text-gray-400">Theme:</span>
-                <span className="ml-2 text-gray-900 dark:text-white capitalize">
-                  {formData.theme.replace('-', ' ')}
-                </span>
+                <span className="ml-2 text-gray-900 dark:text-white capitalize">{formData.theme.replace("-", " ")}</span>
               </div>
               <div className="flex items-center">
                 <span className="text-gray-600 dark:text-gray-400">Colors:</span>
                 <div className="flex items-center ml-2 space-x-2">
-                  <div
-                    className="w-4 h-4 rounded-full border border-gray-300"
-                    style={{ backgroundColor: formData.primaryColor }}
-                  />
-                  <div
-                    className="w-4 h-4 rounded-full border border-gray-300"
-                    style={{ backgroundColor: formData.secondaryColor }}
-                  />
-                  <div
-                    className="w-4 h-4 rounded-full border border-gray-300"
-                    style={{ backgroundColor: formData.accentColor }}
-                  />
+                  <div className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: formData.primaryColor }} />
+                  <div className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: formData.secondaryColor }} />
+                  <div className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: formData.accentColor }} />
                 </div>
               </div>
               <div>
@@ -222,20 +189,16 @@ const AgentPreview = ({ formData }: AgentPreviewProps) => {
                 <span className="ml-2 text-gray-900 dark:text-white">{formData.fontFamily}</span>
               </div>
             </div>
-            
+
             <div>
               <span className="text-gray-600 dark:text-gray-400 text-sm">Welcome Message:</span>
-              <p className="text-blue-600 dark:text-blue-400 mt-1 italic">
-                "{formData.welcomeMessage}"
-              </p>
+              <p className="text-blue-600 dark:text-blue-400 mt-1 italic">"{formData.welcomeMessage}"</p>
             </div>
 
             {formData.customCSS && (
               <div>
                 <span className="text-gray-600 dark:text-gray-400 text-sm">Custom CSS:</span>
-                <pre className="text-xs text-gray-900 dark:text-white mt-1 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg overflow-x-auto">
-                  {formData.customCSS}
-                </pre>
+                <pre className="text-xs text-gray-900 dark:text-white mt-1 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg overflow-x-auto">{formData.customCSS}</pre>
               </div>
             )}
           </div>
@@ -246,19 +209,13 @@ const AgentPreview = ({ formData }: AgentPreviewProps) => {
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
               <div className="flex items-start space-x-3">
                 <div className={`w-8 h-8 bg-gradient-to-r ${getThemeColor()} rounded-full flex items-center justify-center flex-shrink-0`}>
-                  <span className="text-white text-sm font-medium">
-                    {formData.name ? formData.name.charAt(0).toUpperCase() : 'A'}
-                  </span>
+                  <span className="text-white text-sm font-medium">{formData.name ? formData.name.charAt(0).toUpperCase() : "A"}</span>
                 </div>
                 <div className="flex-1">
                   <div className="bg-white dark:bg-gray-700 rounded-lg p-3 shadow-sm">
-                    <p className="text-gray-900 dark:text-white text-sm">
-                      {formData.welcomeMessage || "Hello! How can I help you today?"}
-                    </p>
+                    <p className="text-gray-900 dark:text-white text-sm">{formData.welcomeMessage || "Hello! How can I help you today?"}</p>
                   </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1 mt-1 block">
-                    Just now
-                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1 mt-1 block">Just now</span>
                 </div>
               </div>
             </div>

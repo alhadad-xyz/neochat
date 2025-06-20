@@ -1,13 +1,12 @@
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import BasicInfoStep from './BasicInfoStep';
-import PersonalityStep from './PersonalityStep';
-import KnowledgeStep from './KnowledgeStep';
-import BehaviorStep from './BehaviorStep';
-import AppearanceStep from './AppearanceStep';
-import { AgentFormData } from '@/pages/CreateAgent';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BasicInfoStep from "./BasicInfoStep";
+import PersonalityStep from "./PersonalityStep";
+import KnowledgeStep from "./KnowledgeStep";
+import BehaviorStep from "./BehaviorStep";
+import AppearanceStep from "./AppearanceStep";
+import { AgentFormData } from "@/pages/Dashboard";
 
 interface CreateAgentFormProps {
   formData: AgentFormData;
@@ -29,11 +28,11 @@ const CreateAgentForm = ({ formData, setFormData, lastActiveStep, setLastActiveS
   };
 
   const steps = [
-    { id: 'basic-info', label: 'Basic Info', component: BasicInfoStep },
-    { id: 'personality', label: 'Personality', component: PersonalityStep },
-    { id: 'knowledge', label: 'Knowledge', component: KnowledgeStep },
-    { id: 'behavior', label: 'Behavior', component: BehaviorStep },
-    { id: 'appearance', label: 'Appearance', component: AppearanceStep },
+    { id: "basic-info", label: "Basic Info", component: BasicInfoStep },
+    { id: "personality", label: "Personality", component: PersonalityStep },
+    { id: "knowledge", label: "Knowledge", component: KnowledgeStep },
+    { id: "behavior", label: "Behavior", component: BehaviorStep },
+    { id: "appearance", label: "Appearance", component: AppearanceStep },
   ];
 
   return (
@@ -48,9 +47,7 @@ const CreateAgentForm = ({ formData, setFormData, lastActiveStep, setLastActiveS
                   key={step.id}
                   onClick={() => handleTabChange(step.id)}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
-                    activeTab === step.id
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                    activeTab === step.id ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg" : "text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-700/50"
                   }`}
                 >
                   {step.label}

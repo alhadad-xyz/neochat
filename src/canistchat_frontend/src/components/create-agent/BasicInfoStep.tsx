@@ -1,10 +1,10 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AgentFormData } from '@/pages/CreateAgent';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AgentFormData } from "@/pages/Dashboard";
 
 interface BasicInfoStepProps {
   formData: AgentFormData;
@@ -30,11 +30,11 @@ const BasicInfoStep = ({ formData, setFormData }: BasicInfoStepProps) => {
             id="agent-name"
             placeholder="e.g. Customer Support Assistant"
             value={formData.name}
-            onChange={(e) => handleChange('name', e.target.value)}
+            onChange={(e) => handleChange("name", e.target.value)}
             className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30"
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="description" className="text-gray-700 dark:text-gray-300">
             Description <span className="text-red-500">*</span>
@@ -43,14 +43,16 @@ const BasicInfoStep = ({ formData, setFormData }: BasicInfoStepProps) => {
             id="description"
             placeholder="Describe what your agent does and how it helps users..."
             value={formData.description}
-            onChange={(e) => handleChange('description', e.target.value)}
+            onChange={(e) => handleChange("description", e.target.value)}
             className="min-h-[120px] bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="category" className="text-gray-700 dark:text-gray-300">Category</Label>
-          <Select value={formData.category} onValueChange={(value) => handleChange('category', value)}>
+          <Label htmlFor="category" className="text-gray-700 dark:text-gray-300">
+            Category
+          </Label>
+          <Select value={formData.category} onValueChange={(value) => handleChange("category", value)}>
             <SelectTrigger className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
@@ -73,8 +75,8 @@ const BasicInfoStep = ({ formData, setFormData }: BasicInfoStepProps) => {
                 type="radio"
                 name="visibility"
                 value="private"
-                checked={formData.visibility === 'private'}
-                onChange={(e) => handleChange('visibility', e.target.value)}
+                checked={formData.visibility === "private"}
+                onChange={(e) => handleChange("visibility", e.target.value)}
                 className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">Private (Only you can access)</span>
@@ -84,8 +86,8 @@ const BasicInfoStep = ({ formData, setFormData }: BasicInfoStepProps) => {
                 type="radio"
                 name="visibility"
                 value="public"
-                checked={formData.visibility === 'public'}
-                onChange={(e) => handleChange('visibility', e.target.value)}
+                checked={formData.visibility === "public"}
+                onChange={(e) => handleChange("visibility", e.target.value)}
                 className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">Public (Anyone can access)</span>
