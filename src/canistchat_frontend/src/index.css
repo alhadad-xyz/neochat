@@ -2,7 +2,9 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+
 
 @layer base {
   :root {
@@ -90,6 +92,7 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
 }
 
 @layer base {
