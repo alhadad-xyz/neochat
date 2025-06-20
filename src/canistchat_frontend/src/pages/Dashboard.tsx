@@ -107,6 +107,7 @@ const Dashboard: React.FC<DashboardProps> = ({ sessionToken, selectedAgent, onSe
   const [showPreview, setShowPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications] = useState(3); // Mock notification count
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0);
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -273,6 +274,14 @@ const Dashboard: React.FC<DashboardProps> = ({ sessionToken, selectedAgent, onSe
                 </div>
               </div>
             </div>
+            <AgentCreator
+              sessionToken={sessionToken}
+              onAgentCreated={(agent) => {
+                onSelectAgent(agent);
+                onNavigate("agents");
+                setAnalyticsRefreshKey((prev) => prev + 1);
+              }}
+            />
 
             {showPreview ? <AgentPreview formData={agentFormData} /> : <CreateAgentForm formData={agentFormData} setFormData={setAgentFormData} lastActiveStep={lastActiveStep} setLastActiveStep={setLastActiveStep} />}
           </div>
@@ -301,7 +310,7 @@ const Dashboard: React.FC<DashboardProps> = ({ sessionToken, selectedAgent, onSe
             <div className="flex items-center justify-between">
               <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Analytics</h1>
             </div>
-            <Analytics sessionToken={sessionToken} selectedAgent={selectedAgent} />
+            <Analytics sessionToken={sessionToken} selectedAgent={selectedAgent} refreshKey={analyticsRefreshKey} />
           </div>
         );
 

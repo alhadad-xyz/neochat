@@ -1,0 +1,34 @@
+// Version: 1.0.0
+type AgentId = Text;
+type Conversation =
+  {
+    agentId : AgentId;
+    created : Time;
+    id : ConversationId;
+    participantId : ?Text;
+    sessionId : SessionId;
+    status : ConversationStatus;
+    updated : Time
+  };
+type ConversationId = Text;
+type ConversationStatus = {#Active; #Archived; #Completed};
+type Message =
+  {
+    content : Text;
+    conversationId : ConversationId;
+    id : MessageId;
+    metadata : [(Text, Text)];
+    role : MessageRole;
+    timestamp : Time;
+    tokens : Nat
+  };
+type MessageId = Text;
+type MessageRole = {#Agent; #System; #User};
+type SessionId = Text;
+type Time = Int;
+actor {
+  stable var conversationEntries : [(ConversationId, Conversation)];
+  stable var messageEntries : [(MessageId, Message)];
+  stable var nextConversationId : Nat;
+  stable var nextMessageId : Nat
+};

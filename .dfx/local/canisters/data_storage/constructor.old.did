@@ -1,0 +1,91 @@
+type Time = int;
+type SessionId = text;
+type Result_4 = 
+ variant {
+   err: Error;
+   ok: ConversationId;
+ };
+type Result_3 = 
+ variant {
+   err: Error;
+   ok: Conversation;
+ };
+type Result_2 = 
+ variant {
+   err: Error;
+   ok: vec Message;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok: MessageId;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok;
+ };
+type MessageRole = 
+ variant {
+   Agent;
+   System;
+   User;
+ };
+type MessageId = text;
+type Message = 
+ record {
+   content: text;
+   conversationId: ConversationId;
+   id: MessageId;
+   metadata: vec record {
+                   text;
+                   text;
+                 };
+   role: MessageRole;
+   timestamp: Time;
+   tokens: nat;
+ };
+type Error = 
+ variant {
+   NotFound;
+   StorageError: text;
+   Unauthorized;
+   ValidationError: text;
+ };
+type ConversationStatus = 
+ variant {
+   Active;
+   Archived;
+   Completed;
+ };
+type ConversationId = text;
+type Conversation = 
+ record {
+   agentId: AgentId;
+   created: Time;
+   id: ConversationId;
+   participantId: opt text;
+   sessionId: SessionId;
+   status: ConversationStatus;
+   updated: Time;
+ };
+type AgentId = text;
+service : {
+  createConversation: (AgentId, SessionId, opt text) -> (Result_4);
+  getAgentConversations: (AgentId, opt nat) -> (vec Conversation) query;
+  getConversation: (ConversationId) -> (Result_3) query;
+  getConversationMessages: (ConversationId) -> (Result_2) query;
+  healthCheck: () ->
+   (record {
+      status: text;
+      totalConversations: nat;
+      totalMessages: nat;
+    });
+  storeMessage: (ConversationId, MessageRole, text, nat,
+   vec record {
+         text;
+         text;
+       }) -> (Result_1);
+  test: () -> (text);
+  updateConversationStatus: (ConversationId, ConversationStatus) -> (Result);
+}

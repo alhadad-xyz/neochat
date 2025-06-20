@@ -1,0 +1,323 @@
+type VersionId = nat;
+type ValidationResult = 
+ record {
+   errors: vec text;
+   isValid: bool;
+   score: float64;
+   warnings: vec text;
+ };
+type UserId = principal;
+type Time = int;
+type Result_9 = 
+ variant {
+   err: Error;
+   ok:
+    record {
+      averageRating: opt float64;
+      totalConversations: nat;
+      totalMessages: nat;
+      totalTokensUsed: nat;
+    };
+ };
+type Result_8 = 
+ variant {
+   err: text;
+   ok: Agent;
+ };
+type Result_7 = 
+ variant {
+   err: Error;
+   ok: vec AgentConfig;
+ };
+type Result_6 = 
+ variant {
+   err: Error;
+   ok: vec ConversationContext;
+ };
+type Result_5 = 
+ variant {
+   err: Error;
+   ok: ConversationContext;
+ };
+type Result_4 = 
+ variant {
+   err: text;
+   ok: vec Agent;
+ };
+type Result_3 = 
+ variant {
+   err: text;
+   ok: text;
+ };
+type Result_2 = 
+ variant {
+   err: Error;
+   ok:
+    record {
+      confidence: float64;
+      contextId: ContextId;
+      processingTime: nat;
+      response: text;
+      tokensUsed: nat;
+    };
+ };
+type Result_12 = 
+ variant {
+   err: Error;
+   ok: AgentId;
+ };
+type Result_11 = 
+ variant {
+   err: Error;
+   ok: ContextId;
+ };
+type Result_10 = 
+ variant {
+   err: Error;
+   ok: Agent;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok: VersionId;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok;
+ };
+type PersonalityConfig = 
+ record {
+   communicationStyle:
+    variant {
+      Conversational;
+      Creative;
+      Educational;
+      Professional;
+      Technical;
+    };
+   responsePattern: variant {
+                      Concise;
+                      Detailed;
+                      Narrative;
+                      Structured;
+                    };
+   style: text;
+   tone: text;
+   traits: vec text;
+ };
+type KnowledgeSource = 
+ record {
+   content: text;
+   id: text;
+   isActive: bool;
+   lastUpdated: Time;
+   metadata: vec record {
+                   text;
+                   text;
+                 };
+   priority: nat;
+   sourceType: variant {
+                 API;
+                 Database;
+                 Document;
+                 Manual;
+                 URL;
+               };
+   version: VersionId;
+ };
+type Error = 
+ variant {
+   ConfigurationError: text;
+   InternalError: text;
+   NotFound;
+   QuotaExceeded;
+   RateLimitExceeded;
+   Unauthorized;
+   ValidationError: text;
+ };
+type CreateAgentRequest = 
+ record {
+   category: text;
+   config: AgentConfig;
+   description: text;
+   isPublic: bool;
+   name: text;
+   tags: vec text;
+ };
+type ConversationContext = 
+ record {
+   agentId: AgentId;
+   compressionEnabled: bool;
+   contextId: ContextId;
+   created: Time;
+   lastAccessed: Time;
+   maxSize: nat;
+   messages: vec ContextMessage;
+   metadata: vec record {
+                   text;
+                   text;
+                 };
+   userId: UserId;
+ };
+type ContextMessage = 
+ record {
+   content: text;
+   metadata: vec record {
+                   text;
+                   text;
+                 };
+   role: variant {
+           Assistant;
+           System;
+           User;
+         };
+   timestamp: Time;
+   tokenCount: opt nat;
+ };
+type ContextId = text;
+type BehaviorConfig = 
+ record {
+   contextWindow: nat;
+   creativity: float64;
+   frequencyPenalty: float64;
+   maxTokens: nat;
+   presencePenalty: float64;
+   responseLength: variant {
+                     Long;
+                     Medium;
+                     Short;
+                     Variable;
+                   };
+   systemPromptTemplate: text;
+   temperature: float64;
+   topP: float64;
+ };
+type AppearanceConfig = 
+ record {
+   accentColor: text;
+   avatar: opt text;
+   borderRadius: text;
+   customCSS: opt text;
+   fontFamily: text;
+   fontSize: text;
+   primaryColor: text;
+   secondaryColor: text;
+   theme: variant {
+            Auto;
+            Dark;
+            Light;
+          };
+ };
+type AgentStatus = 
+ variant {
+   Active;
+   Archived;
+   Inactive;
+   Suspended;
+ };
+type AgentId = text;
+type AgentConfig = 
+ record {
+   appearance: AppearanceConfig;
+   behavior: BehaviorConfig;
+   contextSettings:
+    record {
+      enableLearning: bool;
+      enableMemory: bool;
+      maxContextMessages: nat;
+      memoryDuration: nat;
+    };
+   integrationSettings:
+    record {
+      allowedOrigins: vec text;
+      rateLimiting:
+       record {
+         enabled: bool;
+         maxRequestsPerHour: nat;
+         maxTokensPerHour: nat;
+       };
+      webhooks: vec record {
+                      enabled: bool;
+                      events: vec text;
+                      url: text;
+                    };
+    };
+   knowledgeBase: vec KnowledgeSource;
+   personality: PersonalityConfig;
+   version: VersionId;
+ };
+type Agent = 
+ record {
+   analytics:
+    record {
+      averageRating: opt float64;
+      totalConversations: nat;
+      totalMessages: nat;
+      totalTokensUsed: nat;
+    };
+   category: text;
+   config: AgentConfig;
+   configHistory: vec AgentConfig;
+   created: Time;
+   description: text;
+   id: AgentId;
+   lastUsed: opt Time;
+   name: text;
+   ownerId: UserId;
+   permissions:
+    record {
+      accessLevel: variant {
+                     Editor;
+                     Owner;
+                     Viewer;
+                   };
+      allowedUsers: vec UserId;
+      isPublic: bool;
+    };
+   status: AgentStatus;
+   tags: vec text;
+   updated: Time;
+ };
+service : {
+  addContextMessage: (ContextId, variant {
+                                   Assistant;
+                                   System;
+                                   User;
+                                 }, text) -> (Result);
+  clearAgentContext: (AgentId, ContextId) -> (Result);
+  createAgent: (CreateAgentRequest) -> (Result_12);
+  createAgentAdvanced: (CreateAgentRequest) -> (Result_12);
+  createAgentIntegrated: (text, CreateAgentRequest) -> (Result_3);
+  createAgentWithContextSettings: (CreateAgentRequest,
+   record {
+     enableLearning: bool;
+     enableMemory: bool;
+     maxContextMessages: nat;
+     memoryDuration: nat;
+   }) -> (Result_12);
+  createConversationContext: (AgentId) -> (Result_11);
+  deleteAgent: (AgentId) -> (Result);
+  getAgent: (AgentId) -> (Result_10) query;
+  getAgentAnalytics: (AgentId) -> (Result_9) query;
+  getAgentAuthorized: (text, text) -> (Result_8);
+  getAgentConfigHistory: (AgentId) -> (Result_7) query;
+  getAgentContexts: (AgentId) -> (Result_6);
+  getConversationContext: (ContextId) -> (Result_5) query;
+  getUserAgents: (UserId) -> (vec Agent) query;
+  getUserAgentsAuthorized: (text) -> (Result_4);
+  healthCheck: () -> (record {
+                        services: vec text;
+                        status: text;
+                      });
+  processAgentChat: (text, text, text) -> (Result_3);
+  processAgentChatAdvanced: (AgentId, text, opt ContextId, opt bool,
+   opt float64) -> (Result_2);
+  revertAgentConfig: (AgentId, VersionId) -> (Result);
+  test: () -> (text);
+  updateAgent: (AgentId, AgentConfig) -> (Result);
+  updateAgentAdvanced: (AgentId, AgentConfig, opt text) -> (Result_1);
+  updateAgentAnalytics: (AgentId, nat, nat, nat) -> (Result);
+  updateAgentStatus: (AgentId, AgentStatus) -> (Result);
+  validateAgentConfiguration: (AgentConfig) -> (ValidationResult);
+}

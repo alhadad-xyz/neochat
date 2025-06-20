@@ -1,0 +1,36 @@
+type UserId = principal;
+type SessionId = text;
+type Result_2 = 
+ variant {
+   err: Error;
+   ok: SessionId;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok: UserId;
+ };
+type Error = 
+ variant {
+   InternalError: text;
+   InvalidSession;
+   SessionExpired;
+   Unauthorized;
+ };
+service : {
+  createSession: () -> (Result_2);
+  healthCheck: () -> (record {
+                        activeSessions: nat;
+                        status: text;
+                      });
+  refreshSession: (SessionId) -> (Result_1);
+  revokeSession: (SessionId) -> (Result_1);
+  test: () -> (text);
+  validateSession: (SessionId) -> (Result) query;
+  whoami: () -> (principal);
+}
