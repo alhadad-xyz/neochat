@@ -1,5 +1,5 @@
-import { AuthClient } from '@dfinity/auth-client';
-import { Identity } from '@dfinity/agent';
+import { AuthClient } from "@dfinity/auth-client";
+import { Identity } from "@dfinity/agent";
 
 // Auth types
 export interface AuthState {
@@ -14,7 +14,7 @@ export interface Agent {
   id: string;
   name: string;
   description: string;
-  status: 'Active' | 'Inactive' | 'Draft';
+  status: "Active" | "Inactive" | "Draft";
   created: string;
   lastUpdated?: string;
   avatar?: string;
@@ -27,7 +27,7 @@ export interface Agent {
     knowledgeBase: {
       documents: string[];
       sources: Array<{
-        type: 'Manual' | 'URL' | 'Document' | 'API' | 'Database';
+        type: "Manual" | "URL" | "Document" | "API" | "Database";
         content: string;
         url?: string;
         metadata?: {
@@ -65,13 +65,13 @@ export interface AgentFormData {
     traits: string[];
     tone: string;
     responseStyle: string;
-    communicationStyle: 'Conversational' | 'Creative' | 'Educational' | 'Professional' | 'Technical';
-    responsePattern: 'Concise' | 'Detailed' | 'Narrative' | 'Structured';
+    communicationStyle: "Conversational" | "Creative" | "Educational" | "Professional" | "Technical";
+    responsePattern: "Concise" | "Detailed" | "Narrative" | "Structured";
   };
   knowledgeBase: {
     documents: string[];
     sources: Array<{
-      type: 'Manual' | 'URL' | 'Document' | 'API' | 'Database';
+      type: "Manual" | "URL" | "Document" | "API" | "Database";
       content: string;
       url?: string;
       metadata?: {
@@ -136,7 +136,7 @@ export interface AgentFormData {
 export interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'agent';
+  sender: "user" | "agent";
   timestamp: Date;
   agentName?: string;
   isError?: boolean;
@@ -182,6 +182,7 @@ export interface AgentListProps {
   sessionToken: string | null;
   onSelectAgent: (agent: Agent | null) => void;
   selectedAgent: Agent | null;
+  onNavigate: (view: string) => void;
 }
 
 export interface ChatInterfaceProps {
@@ -248,4 +249,4 @@ export interface AnalyticsData {
     time: number;
   }>;
   errorRate: number;
-} 
+}
