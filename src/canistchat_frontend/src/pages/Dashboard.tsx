@@ -224,13 +224,13 @@ const Dashboard: React.FC<DashboardProps> = ({ sessionToken, selectedAgent, onSe
             <div className="flex items-center justify-between">
               <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">My Agents</h1>
             </div>
-            <AgentList onSelectAgent={onSelectAgent} selectedAgent={selectedAgent} sessionToken={sessionToken} />
+            <AgentList onSelectAgent={onSelectAgent} selectedAgent={selectedAgent} sessionToken={sessionToken} onNavigate={onNavigate} />
           </div>
         );
 
       case "create":
         return (
-          //* Commented out for now
+          // PENDING_INTEGRATION
           // <div className="space-y-6">
           //   <div className="flex items-center justify-between">
           //     <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Create Agent</h1>
