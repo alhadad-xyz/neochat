@@ -1,9 +1,9 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AgentFormData } from '@/pages/CreateAgent';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AgentFormData } from "@/pages/Dashboard";
 
 interface PersonalityStepProps {
   formData: AgentFormData;
@@ -11,16 +11,11 @@ interface PersonalityStepProps {
 }
 
 const PersonalityStep = ({ formData, setFormData }: PersonalityStepProps) => {
-  const personalityTraits = [
-    'helpful', 'professional', 'friendly', 'enthusiastic',
-    'patient', 'knowledgeable', 'empathetic', 'concise'
-  ];
+  const personalityTraits = ["helpful", "professional", "friendly", "enthusiastic", "patient", "knowledgeable", "empathetic", "concise"];
 
   const toggleTrait = (trait: string) => {
-    const updatedTraits = formData.personalityTraits.includes(trait)
-      ? formData.personalityTraits.filter(t => t !== trait)
-      : [...formData.personalityTraits, trait];
-    
+    const updatedTraits = formData.personalityTraits.includes(trait) ? formData.personalityTraits.filter((t) => t !== trait) : [...formData.personalityTraits, trait];
+
     setFormData({ ...formData, personalityTraits: updatedTraits });
   };
 
@@ -46,11 +41,7 @@ const PersonalityStep = ({ formData, setFormData }: PersonalityStepProps) => {
                   variant={formData.personalityTraits.includes(trait) ? "default" : "outline"}
                   size="sm"
                   onClick={() => toggleTrait(trait)}
-                  className={`${
-                    formData.personalityTraits.includes(trait)
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                      : 'bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/30'
-                  }`}
+                  className={`${formData.personalityTraits.includes(trait) ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white" : "bg-white/50 dark:bg-gray-700/50 border-white/30 dark:border-gray-600/30"}`}
                 >
                   {trait}
                 </Button>
@@ -61,7 +52,7 @@ const PersonalityStep = ({ formData, setFormData }: PersonalityStepProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label className="text-gray-700 dark:text-gray-300">Tone</Label>
-              <Select value={formData.tone} onValueChange={(value) => handleSelectChange('tone', value)}>
+              <Select value={formData.tone} onValueChange={(value) => handleSelectChange("tone", value)}>
                 <SelectTrigger className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30">
                   <SelectValue />
                 </SelectTrigger>
@@ -76,7 +67,7 @@ const PersonalityStep = ({ formData, setFormData }: PersonalityStepProps) => {
 
             <div className="space-y-2">
               <Label className="text-gray-700 dark:text-gray-300">Response Style</Label>
-              <Select value={formData.style} onValueChange={(value) => handleSelectChange('style', value)}>
+              <Select value={formData.style} onValueChange={(value) => handleSelectChange("style", value)}>
                 <SelectTrigger className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30">
                   <SelectValue />
                 </SelectTrigger>
@@ -91,7 +82,7 @@ const PersonalityStep = ({ formData, setFormData }: PersonalityStepProps) => {
 
             <div className="space-y-2">
               <Label className="text-gray-700 dark:text-gray-300">Communication Style</Label>
-              <Select value={formData.communicationStyle} onValueChange={(value) => handleSelectChange('communicationStyle', value)}>
+              <Select value={formData.communicationStyle} onValueChange={(value) => handleSelectChange("communicationStyle", value)}>
                 <SelectTrigger className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30">
                   <SelectValue />
                 </SelectTrigger>
@@ -106,7 +97,7 @@ const PersonalityStep = ({ formData, setFormData }: PersonalityStepProps) => {
 
             <div className="space-y-2">
               <Label className="text-gray-700 dark:text-gray-300">Response Pattern</Label>
-              <Select value={formData.responsePattern} onValueChange={(value) => handleSelectChange('responsePattern', value)}>
+              <Select value={formData.responsePattern} onValueChange={(value) => handleSelectChange("responsePattern", value)}>
                 <SelectTrigger className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30">
                   <SelectValue />
                 </SelectTrigger>

@@ -1,27 +1,26 @@
-
-import React, { useState } from 'react';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Copy, Bot } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Copy, Bot } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const EmbedWidget = () => {
   const { toast } = useToast();
   const [config, setConfig] = useState({
-    width: '400px',
-    height: '600px',
-    theme: 'light',
-    position: 'bottom-right',
-    primaryColor: '#6366f1',
-    borderRadius: '12px',
-    agentName: 'test'
+    width: "400px",
+    height: "600px",
+    theme: "light",
+    position: "bottom-right",
+    primaryColor: "#6366f1",
+    borderRadius: "12px",
+    agentName: "test",
   });
 
   const generateEmbedCode = () => {
@@ -63,15 +62,13 @@ const EmbedWidget = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10 flex w-full">
-      <DashboardSidebar />
+      <DashboardSidebar onNavigate={() => {}} />
       <div className="flex-1 flex flex-col ml-64">
         <DashboardHeader />
         <main className="flex-1 p-8">
           <div className="max-w-6xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-2">
-                Embed Widget Generator
-              </h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-2">Embed Widget Generator</h1>
               <p className="text-gray-600 dark:text-gray-400">
                 Generate HTML code to embed <strong>{config.agentName}</strong> on your website
               </p>
@@ -88,28 +85,18 @@ const EmbedWidget = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="width">Width</Label>
-                        <Input
-                          id="width"
-                          value={config.width}
-                          onChange={(e) => setConfig({...config, width: e.target.value})}
-                          placeholder="400px"
-                        />
+                        <Input id="width" value={config.width} onChange={(e) => setConfig({ ...config, width: e.target.value })} placeholder="400px" />
                       </div>
                       <div>
                         <Label htmlFor="height">Height</Label>
-                        <Input
-                          id="height"
-                          value={config.height}
-                          onChange={(e) => setConfig({...config, height: e.target.value})}
-                          placeholder="600px"
-                        />
+                        <Input id="height" value={config.height} onChange={(e) => setConfig({ ...config, height: e.target.value })} placeholder="600px" />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="theme">Theme</Label>
-                        <Select value={config.theme} onValueChange={(value) => setConfig({...config, theme: value})}>
+                        <Select value={config.theme} onValueChange={(value) => setConfig({ ...config, theme: value })}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select theme" />
                           </SelectTrigger>
@@ -122,7 +109,7 @@ const EmbedWidget = () => {
                       </div>
                       <div>
                         <Label htmlFor="position">Position</Label>
-                        <Select value={config.position} onValueChange={(value) => setConfig({...config, position: value})}>
+                        <Select value={config.position} onValueChange={(value) => setConfig({ ...config, position: value })}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select position" />
                           </SelectTrigger>
@@ -139,29 +126,14 @@ const EmbedWidget = () => {
                     <div>
                       <Label htmlFor="primaryColor">Primary Color</Label>
                       <div className="flex space-x-2">
-                        <Input
-                          id="primaryColor"
-                          type="color"
-                          value={config.primaryColor}
-                          onChange={(e) => setConfig({...config, primaryColor: e.target.value})}
-                          className="w-16 h-10 p-1 border-2"
-                        />
-                        <Input
-                          value={config.primaryColor}
-                          onChange={(e) => setConfig({...config, primaryColor: e.target.value})}
-                          className="flex-1"
-                        />
+                        <Input id="primaryColor" type="color" value={config.primaryColor} onChange={(e) => setConfig({ ...config, primaryColor: e.target.value })} className="w-16 h-10 p-1 border-2" />
+                        <Input value={config.primaryColor} onChange={(e) => setConfig({ ...config, primaryColor: e.target.value })} className="flex-1" />
                       </div>
                     </div>
 
                     <div>
                       <Label htmlFor="borderRadius">Border Radius</Label>
-                      <Input
-                        id="borderRadius"
-                        value={config.borderRadius}
-                        onChange={(e) => setConfig({...config, borderRadius: e.target.value})}
-                        placeholder="12px"
-                      />
+                      <Input id="borderRadius" value={config.borderRadius} onChange={(e) => setConfig({ ...config, borderRadius: e.target.value })} placeholder="12px" />
                     </div>
                   </CardContent>
                 </Card>
@@ -175,9 +147,7 @@ const EmbedWidget = () => {
                         Enterprise Ready
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                      Advanced LLM integration with intelligent load balancing
-                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Advanced LLM integration with intelligent load balancing</p>
                   </CardContent>
                 </Card>
               </div>
@@ -190,22 +160,20 @@ const EmbedWidget = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 min-h-[300px] flex items-center justify-center">
-                      <div 
+                      <div
                         className="rounded-lg shadow-lg flex items-center justify-center text-white font-medium"
                         style={{
                           backgroundColor: config.primaryColor,
                           width: config.width,
-                          height: '60px',
-                          borderRadius: config.borderRadius
+                          height: "60px",
+                          borderRadius: config.borderRadius,
                         }}
                       >
                         <Bot className="w-5 h-5 mr-2" />
                         {config.agentName}
                       </div>
                     </div>
-                    <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-                      Chat interface preview
-                    </p>
+                    <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">Chat interface preview</p>
                   </CardContent>
                 </Card>
 
@@ -220,11 +188,7 @@ const EmbedWidget = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Textarea
-                      value={generateEmbedCode()}
-                      readOnly
-                      className="font-mono text-sm bg-gray-50 dark:bg-gray-800 min-h-[200px] resize-none"
-                    />
+                    <Textarea value={generateEmbedCode()} readOnly className="font-mono text-sm bg-gray-50 dark:bg-gray-800 min-h-[200px] resize-none" />
                   </CardContent>
                 </Card>
 

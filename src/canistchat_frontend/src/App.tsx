@@ -22,14 +22,18 @@ import AgentList from './components/AgentList';
 import ChatInterface from './components/ChatInterface';
 import UserProfile from './components/UserProfile';
 import EmbedGenerator from './components/EmbedGenerator';
-import Dashboard from './components/Dashboard';
 import Analytics from './components/Analytics';
+
+// Pages
+import Dashboard from './pages/Dashboard';
+import Index from './pages/Index';
 
 // Types
 import { Agent, NavigationItem } from './types';
 
 // Services
 import { canisterService } from './services/canisterService';
+import DashboardSidebar from './components/dashboard/DashboardSidebar';
 
 function App() {
   console.log('Environment variables:', {
@@ -169,173 +173,19 @@ function App() {
   ];
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 border border-gray-100">
-          <div className="text-center">
-            <div className="mb-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-4">
-                <ChatBubbleLeftRightIcon className="h-10 w-10 text-white" />
-              </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-2">
-                CanistChat Enterprise
-              </h1>
-              <p className="text-gray-600 text-lg">AI Agent Platform on Internet Computer</p>
-            </div>
-            <button
-              onClick={handleLogin}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              Login with Internet Identity
-            </button>
-            <p className="text-sm text-gray-500 mt-4">
-              Secure authentication powered by Internet Computer
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <Index handleLogin={handleLogin} />;
   }
 
   return (
-    <div className="h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'block' : 'hidden'} fixed inset-0 z-50 lg:hidden`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm bg-white border-r border-gray-200">
-          <SidebarContent navigation={navigation} setActiveView={setActiveView} setSidebarOpen={setSidebarOpen} />
-        </div>
-      </div>
-
-      {/* Static sidebar for desktop */}
-      <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <SidebarContent navigation={navigation} setActiveView={setActiveView} setSidebarOpen={setSidebarOpen} />
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="lg:pl-64 flex flex-col flex-1">
-        {/* Top navigation */}
-        <div className="sticky top-0 z-40 lg:z-10 bg-white shadow-sm border-b border-gray-200">
-          <div className="flex h-16 items-center gap-x-4 px-4 sm:gap-x-6 sm:px-6 lg:px-8">
-            <button
-              type="button"
-              className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Bars3Icon className="h-6 w-6" />
-            </button>
-
-            {/* Search bar */}
-            <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-              <div className="relative flex flex-1 items-center">
-                <MagnifyingGlassIcon className="pointer-events-none absolute left-4 h-5 w-5 text-gray-400" />
-                <input
-                  type="search"
-                  placeholder="Search agents, chats, analytics..."
-                  className="block h-full w-full border-0 py-0 pl-11 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 bg-gray-50 rounded-lg"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Right side actions */}
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
-              {/* Notifications */}
-              <button className="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500">
-                <BellIcon className="h-6 w-6" />
-                {notifications > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                    {notifications}
-                  </span>
-                )}
-              </button>
-
-              {/* User menu */}
-              <div className="flex items-center gap-x-2">
-                <span className="text-sm font-medium text-gray-700">
-                {identity?.getPrincipal() ? 
-                  (typeof identity.getPrincipal().toString === 'function' ? 
-                    identity.getPrincipal().toString().slice(0, 8) : 
-                    'Unknown'
-                  ) + '...' : 
-                  'Loading...'
-                }
-              </span>
-              <button
-                onClick={handleLogout}
-                  className="flex items-center gap-x-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-              >
-                  <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                  Logout
-              </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Page content */}
-        <main className="flex-1 py-6">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="animate-fade-in">
-              {activeView === 'dashboard' && (
-                <Dashboard
-                  sessionToken={sessionToken}
-                  selectedAgent={selectedAgent}
-                  onSelectAgent={setSelectedAgent}
-                  onNavigate={setActiveView}
-                />
-              )}
-              
-              {activeView === 'agents' && (
-            <AgentList
-              sessionToken={sessionToken}
-              onSelectAgent={setSelectedAgent}
-              selectedAgent={selectedAgent}
-            />
-          )}
-          
-              {activeView === 'create' && (
-            <AgentCreator
-              sessionToken={sessionToken}
-                  onAgentCreated={() => setActiveView('agents')}
-            />
-          )}
-          
-              {activeView === 'chat' && selectedAgent && (
-            <ChatInterface
-              sessionToken={sessionToken}
-              agent={selectedAgent}
-            />
-          )}
-          
-              {activeView === 'analytics' && (
-                <Analytics
-                  sessionToken={sessionToken}
-                  selectedAgent={selectedAgent}
-                />
-              )}
-              
-              {activeView === 'embed' && selectedAgent && (
-            <EmbedGenerator
-              agent={selectedAgent}
-              canisterId={process.env.REACT_APP_AGENT_MANAGER_CANISTER_ID || 'uxrrr-q7777-77774-qaaaq-cai'}
-            />
-          )}
-          
-              {activeView === 'profile' && (
-            <UserProfile
-              sessionToken={sessionToken}
-              identity={identity}
-            />
-          )}
-        </div>
-          </div>
-        </main>
-      </div>
-    </div>
+    <Dashboard 
+      sessionToken={sessionToken}
+      selectedAgent={selectedAgent}
+      onSelectAgent={setSelectedAgent}
+      onNavigate={setActiveView}
+      identity={identity}
+      onLogout={handleLogout}
+      activeView={activeView}
+    />
   );
 }
 
@@ -406,19 +256,6 @@ function SidebarContent({
             </li>
           ))}
         </ul>
-
-        {/* Enterprise features indicator */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
-            <div className="flex items-center gap-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-gray-700">Enterprise Ready</span>
-            </div>
-            <p className="text-xs text-gray-600 mt-1">
-              Advanced LLM integration with intelligent load balancing
-            </p>
-          </div>
-        </div>
       </nav>
     </>
   );

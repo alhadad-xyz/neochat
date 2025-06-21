@@ -19,9 +19,10 @@ import { canisterService, UsageRecord, UserBalance } from '../services/canisterS
 interface AnalyticsProps {
   sessionToken: string | null;
   selectedAgent: Agent | null;
+  refreshKey?: number;
 }
 
-const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) => {
+const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent, refreshKey }: AnalyticsProps) => {
   const [analyticsData, setAnalyticsData] = useState<{
     overview: {
       totalMessages: number;
@@ -102,7 +103,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
     };
 
     loadAnalyticsData();
-  }, [sessionToken]);
+  }, [sessionToken, refreshKey]);
 
   const overviewMetrics = [
     {
@@ -155,6 +156,17 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
     { value: 'conversations', label: 'Conversations' },
     { value: 'tokens', label: 'Tokens Used' },
   ];
+
+  // Fungsi untuk menampilkan label operation yang mudah dibaca
+  const getOperationLabel = (operation: any) => {
+    if (typeof operation === 'string') return operation;
+    if (operation.AddBalance !== undefined) return 'Top Up Balance';
+    if (operation.AgentCreation !== undefined) return 'Agent Creation';
+    if (operation.DocumentUpload !== undefined) return 'Document Upload';
+    if (operation.CustomPromptTraining !== undefined) return 'Custom Prompt Training';
+    if (operation.MessageProcessing !== undefined) return 'Message Processing';
+    return 'Unknown';
+  };
 
   if (loading) {
     return (
@@ -375,9 +387,9 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
         <div className="p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Usage History</h3>
           {analyticsData.usageHistory.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-96 overflow-y-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 sticky top-0 bg-white z-10">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
@@ -397,25 +409,37 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {analyticsData.usageHistory.slice(0, 10).map((record) => (
-                    <tr key={record.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(record.timestamp).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.agentId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.operation}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.tokens.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${record.cost.toFixed(4)}
-                      </td>
-                    </tr>
-                  ))}
+                  {analyticsData.usageHistory
+                    .filter((record: UsageRecord) =>
+                      typeof record.timestamp === 'number' &&
+                      !isNaN(record.timestamp) &&
+                      record.timestamp > 0 &&
+                      typeof record.cost === 'number' &&
+                      typeof record.tokens === 'number'
+                    )
+                    .sort((a, b) => b.timestamp - a.timestamp)
+                    .slice(0, 10)
+                    .map((record: UsageRecord) => (
+                      <tr key={record.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {typeof record.timestamp === 'number' && !isNaN(record.timestamp) && record.timestamp > 0
+                            ? new Date(record.timestamp / 1_000_000).toLocaleDateString()
+                            : 'Invalid Date'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {record.agentId}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {getOperationLabel(record.operation)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {record.tokens.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          ${record.cost.toFixed(4)}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>

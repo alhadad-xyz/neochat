@@ -275,7 +275,7 @@ function canistchat_shortcode($atts) {
     ), $atts);
     
     return '<iframe src="https://${canisterId}.ic0.app/embed?agent=' . esc_attr($atts['agent']) . '&theme=' . esc_attr($atts['theme']) . '&color=' . urlencode($atts['color']) . '" width="' . esc_attr($atts['width']) . '" height="' . esc_attr($atts['height']) . '" style="border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" allow="encrypted-media" title="AI Assistant"></iframe>';
-}
+    }
 add_shortcode('canistchat', 'canistchat_shortcode');`;
   };
 
@@ -301,8 +301,8 @@ add_shortcode('canistchat', 'canistchat_shortcode');`;
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          Embed Widget Generator
-        </h3>
+        Embed Widget Generator
+      </h3>
         <p className="text-gray-600">
           Generate embed code and integration instructions for <strong>{agent.name}</strong>
         </p>
@@ -351,91 +351,91 @@ add_shortcode('canistchat', 'canistchat_shortcode');`;
       <div className="p-6">
         {activeTab === 'generator' && (
           <div className="space-y-6">
-            {/* Customization Options */}
+      {/* Customization Options */}
             <div>
               <h4 className="text-lg font-medium text-gray-900 mb-4">Customization Options</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Width
-                  </label>
-                  <input
-                    type="text"
-                    value={customization.width}
-                    onChange={(e) => setCustomization({...customization, width: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="400px"
-                  />
-                </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Width
+          </label>
+          <input
+            type="text"
+            value={customization.width}
+            onChange={(e) => setCustomization({...customization, width: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="400px"
+          />
+        </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Height
-                  </label>
-                  <input
-                    type="text"
-                    value={customization.height}
-                    onChange={(e) => setCustomization({...customization, height: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="600px"
-                  />
-                </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Height
+          </label>
+          <input
+            type="text"
+            value={customization.height}
+            onChange={(e) => setCustomization({...customization, height: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="600px"
+          />
+        </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Theme
-                  </label>
-                  <select
-                    value={customization.theme}
-                    onChange={(e) => setCustomization({...customization, theme: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="auto">Auto</option>
-                  </select>
-                </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Theme
+          </label>
+          <select
+            value={customization.theme}
+            onChange={(e) => setCustomization({...customization, theme: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="auto">Auto</option>
+          </select>
+        </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Position
-                  </label>
-                  <select
-                    value={customization.position}
-                    onChange={(e) => setCustomization({...customization, position: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="inline">Inline</option>
-                    <option value="bottom-right">Bottom Right</option>
-                    <option value="bottom-left">Bottom Left</option>
-                    <option value="top-right">Top Right</option>
-                    <option value="top-left">Top Left</option>
-                  </select>
-                </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Position
+          </label>
+          <select
+            value={customization.position}
+            onChange={(e) => setCustomization({...customization, position: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="inline">Inline</option>
+            <option value="bottom-right">Bottom Right</option>
+            <option value="bottom-left">Bottom Left</option>
+            <option value="top-right">Top Right</option>
+            <option value="top-left">Top Left</option>
+          </select>
+        </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Primary Color
-                  </label>
-                  <input
-                    type="color"
-                    value={customization.primaryColor}
-                    onChange={(e) => setCustomization({...customization, primaryColor: e.target.value})}
-                    className="w-full h-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Primary Color
+          </label>
+          <input
+            type="color"
+            value={customization.primaryColor}
+            onChange={(e) => setCustomization({...customization, primaryColor: e.target.value})}
+            className="w-full h-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Border Radius
-                  </label>
-                  <input
-                    type="text"
-                    value={customization.borderRadius}
-                    onChange={(e) => setCustomization({...customization, borderRadius: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="12px"
-                  />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Border Radius
+          </label>
+          <input
+            type="text"
+            value={customization.borderRadius}
+            onChange={(e) => setCustomization({...customization, borderRadius: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="12px"
+          />
                 </div>
 
                 <div>
@@ -503,25 +503,25 @@ add_shortcode('canistchat', 'canistchat_shortcode');`;
                   />
                   <span className="text-sm text-gray-700">Auto Open</span>
                 </label>
-              </div>
-            </div>
+        </div>
+      </div>
 
-            {/* Preview */}
+      {/* Preview */}
             <div>
               <h4 className="text-lg font-medium text-gray-900 mb-4">Preview</h4>
               <div className="bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-300">
                 <div className="flex items-center justify-center">
                   <div 
                     className="bg-white rounded-lg shadow-lg border overflow-hidden"
-                    style={{
-                      width: customization.width,
+            style={{
+              width: customization.width,
                       height: '300px',
-                      borderRadius: customization.borderRadius,
+              borderRadius: customization.borderRadius,
                       maxWidth: '100%'
                     }}
                   >
                     {customization.showHeader && (
-                      <div 
+            <div 
                         className="p-4 text-white"
                         style={{ backgroundColor: customization.primaryColor }}
                       >
@@ -555,13 +555,13 @@ add_shortcode('canistchat', 'canistchat_shortcode');`;
                           disabled
                         />
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Generated Code */}
+      {/* Generated Code */}
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h4 className="text-lg font-medium text-gray-900">Generated Embed Code</h4>
@@ -573,22 +573,22 @@ add_shortcode('canistchat', 'canistchat_shortcode');`;
                     <DocumentDuplicateIcon className="w-4 h-4 mr-2" />
                     {copySuccess === 'html' ? 'Copied!' : 'Copy HTML'}
                   </button>
-                  <button
+          <button
                     onClick={openTestWindow}
                     className="inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
+          >
                     <EyeIcon className="w-4 h-4 mr-2" />
                     Test Widget
-                  </button>
+          </button>
                 </div>
-              </div>
-              <textarea
-                value={embedCode}
-                readOnly
+        </div>
+        <textarea
+          value={embedCode}
+          readOnly
                 className="w-full h-40 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 font-mono text-sm focus:outline-none"
-                placeholder="Embed code will appear here..."
-              />
-            </div>
+          placeholder="Embed code will appear here..."
+        />
+      </div>
 
             {/* Additional Integration Options */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -705,7 +705,7 @@ add_shortcode('canistchat', 'canistchat_shortcode');`;
                     <li>2. Paste the code in "Footer"</li>
                     <li>3. Or use a Code Block on specific pages</li>
                     <li>4. Save and publish</li>
-                  </ol>
+        </ol>
                 </div>
               </div>
             </div>

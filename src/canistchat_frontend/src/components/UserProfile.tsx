@@ -105,11 +105,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ sessionToken, identity }) => 
           tokensUsed: lastMonthTokens,
           cost: lastMonthCost
         },
-        billing: history.slice(0, 10).map(record => ({
-          date: new Date(record.timestamp).toISOString().split('T')[0],
-          amount: record.cost,
-          description: `${record.operation} - ${record.agentId}`
-        }))
+        billing: []
       };
       
       setProfile(realProfile);
@@ -494,47 +490,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ sessionToken, identity }) => 
                 <span className="text-sm text-gray-700">Total Transactions</span>
                 <span className="text-sm font-medium text-gray-900">{systemHealth.totalTransactions.toLocaleString()}</span>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Recent Billing History */}
-      {usage && usage.billing.length > 0 && (
-        <div className="bg-white shadow rounded-lg border border-gray-200">
-          <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Transactions</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {usage.billing.map((bill, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(bill.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {bill.description}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${bill.amount.toFixed(4)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </div>
         </div>

@@ -3,8 +3,14 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, MessageSquare, BarChart3, Settings, Sparkles, Zap } from 'lucide-react';
+import { Agent } from '../../types';
 
-const QuickActions = () => {
+interface QuickActionsProps {
+  onNavigate: (view: string) => void;
+  selectedAgent: Agent | null;
+}
+
+const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate, selectedAgent }) => {
   const actions = [
     {
       title: 'Create New Agent',
@@ -13,6 +19,8 @@ const QuickActions = () => {
       color: 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
       iconBg: 'bg-blue-100 dark:bg-blue-900/30',
       iconColor: 'text-blue-600 dark:text-blue-400',
+      onClick: () => onNavigate('create'),
+      disabled: false,
     },
     {
       title: 'Start Conversation',
@@ -21,6 +29,8 @@ const QuickActions = () => {
       color: 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700',
       iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
       iconColor: 'text-emerald-600 dark:text-emerald-400',
+      onClick: () => onNavigate('chat'),
+      disabled: !selectedAgent,
     },
     {
       title: 'View Analytics',
@@ -29,6 +39,8 @@ const QuickActions = () => {
       color: 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
       iconBg: 'bg-purple-100 dark:bg-purple-900/30',
       iconColor: 'text-purple-600 dark:text-purple-400',
+      onClick: () => onNavigate('analytics'),
+      disabled: false,
     },
     {
       title: 'Manage Agents',
@@ -37,6 +49,8 @@ const QuickActions = () => {
       color: 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700',
       iconBg: 'bg-orange-100 dark:bg-orange-900/30',
       iconColor: 'text-orange-600 dark:text-orange-400',
+      onClick: () => onNavigate('agents'),
+      disabled: false,
     },
   ];
 
@@ -58,7 +72,10 @@ const QuickActions = () => {
           {actions.map((action, index) => (
             <div
               key={index}
-              className="group p-5 bg-gradient-to-br from-white/80 to-white/40 dark:from-gray-800/80 dark:to-gray-800/40 backdrop-blur-sm border border-white/30 dark:border-gray-600/30 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105"
+              className={`group p-5 bg-gradient-to-br from-white/80 to-white/40 dark:from-gray-800/80 dark:to-gray-800/40 backdrop-blur-sm border border-white/30 dark:border-gray-600/30 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 ${
+                action.disabled ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              onClick={action.disabled ? undefined : action.onClick}
             >
               <div className="flex items-start space-x-4">
                 <div className={`p-3 rounded-lg ${action.iconBg} group-hover:scale-110 transition-transform duration-300`}>
@@ -74,6 +91,13 @@ const QuickActions = () => {
                   <Button 
                     size="sm" 
                     className={`${action.color} text-white shadow-md hover:shadow-lg transition-all duration-300`}
+                    disabled={action.disabled}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!action.disabled) {
+                        action.onClick();
+                      }
+                    }}
                   >
                     Get Started
                   </Button>
@@ -87,4 +111,4 @@ const QuickActions = () => {
   );
 };
 
-export default QuickActions;
+export default QuickActions

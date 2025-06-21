@@ -1,31 +1,30 @@
-
-import React from 'react';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { MessageSquare, Users, Clock, TrendingUp, FileText, BarChart3 } from 'lucide-react';
+import React from "react";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { MessageSquare, Users, Clock, TrendingUp, FileText, BarChart3 } from "lucide-react";
 
 const Analytics = () => {
   // Sample data for charts
   const usageData = [
-    { name: 'Mon', messages: 120, conversations: 45, responseTime: 1.2 },
-    { name: 'Tue', messages: 190, conversations: 67, responseTime: 1.1 },
-    { name: 'Wed', messages: 150, conversations: 52, responseTime: 1.3 },
-    { name: 'Thu', messages: 220, conversations: 78, responseTime: 1.0 },
-    { name: 'Fri', messages: 280, conversations: 89, responseTime: 0.9 },
-    { name: 'Sat', messages: 160, conversations: 58, responseTime: 1.1 },
-    { name: 'Sun', messages: 130, conversations: 41, responseTime: 1.4 },
+    { name: "Mon", messages: 120, conversations: 45, responseTime: 1.2 },
+    { name: "Tue", messages: 190, conversations: 67, responseTime: 1.1 },
+    { name: "Wed", messages: 150, conversations: 52, responseTime: 1.3 },
+    { name: "Thu", messages: 220, conversations: 78, responseTime: 1.0 },
+    { name: "Fri", messages: 280, conversations: 89, responseTime: 0.9 },
+    { name: "Sat", messages: 160, conversations: 58, responseTime: 1.1 },
+    { name: "Sun", messages: 130, conversations: 41, responseTime: 1.4 },
   ];
 
   const agentPerformanceData = [
-    { name: 'Customer Support Bot', messages: 450, satisfaction: 4.8, efficiency: 92 },
-    { name: 'Sales Assistant', messages: 320, satisfaction: 4.6, efficiency: 88 },
-    { name: 'Technical Helper', messages: 280, satisfaction: 4.7, efficiency: 90 },
-    { name: 'FAQ Bot', messages: 180, satisfaction: 4.5, efficiency: 85 },
+    { name: "Customer Support Bot", messages: 450, satisfaction: 4.8, efficiency: 92 },
+    { name: "Sales Assistant", messages: 320, satisfaction: 4.6, efficiency: 88 },
+    { name: "Technical Helper", messages: 280, satisfaction: 4.7, efficiency: 90 },
+    { name: "FAQ Bot", messages: 180, satisfaction: 4.5, efficiency: 85 },
   ];
 
   const chartConfig = {
@@ -34,7 +33,7 @@ const Analytics = () => {
       color: "hsl(var(--chart-1))",
     },
     conversations: {
-      label: "Conversations", 
+      label: "Conversations",
       color: "hsl(var(--chart-2))",
     },
     responseTime: {
@@ -45,7 +44,7 @@ const Analytics = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex w-full">
-      <DashboardSidebar />
+      <DashboardSidebar onNavigate={() => {}} />
       <div className="flex-1 ml-64">
         <DashboardHeader />
         <main className="p-8">
@@ -53,9 +52,7 @@ const Analytics = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
-                  Comprehensive insights into your AI agent performance and usage patterns.
-                </p>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">Comprehensive insights into your AI agent performance and usage patterns.</p>
               </div>
               <Select defaultValue="7days">
                 <SelectTrigger className="w-32">
@@ -78,9 +75,7 @@ const Analytics = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">0</div>
-                  <p className="text-xs text-muted-foreground">
-                    +0% from last month
-                  </p>
+                  <p className="text-xs text-muted-foreground">+0% from last month</p>
                 </CardContent>
               </Card>
 
@@ -91,9 +86,7 @@ const Analytics = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">0</div>
-                  <p className="text-xs text-muted-foreground">
-                    +0% from last month
-                  </p>
+                  <p className="text-xs text-muted-foreground">+0% from last month</p>
                 </CardContent>
               </Card>
 
@@ -104,9 +97,7 @@ const Analytics = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">0.0s</div>
-                  <p className="text-xs text-muted-foreground">
-                    +0% from last month
-                  </p>
+                  <p className="text-xs text-muted-foreground">+0% from last month</p>
                 </CardContent>
               </Card>
 
@@ -117,9 +108,7 @@ const Analytics = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">0.0%</div>
-                  <p className="text-xs text-muted-foreground">
-                    +0% from last month
-                  </p>
+                  <p className="text-xs text-muted-foreground">+0% from last month</p>
                 </CardContent>
               </Card>
             </div>
@@ -128,9 +117,7 @@ const Analytics = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Usage Trends</CardTitle>
-                <CardDescription>
-                  Track your AI agent usage patterns over time
-                </CardDescription>
+                <CardDescription>Track your AI agent usage patterns over time</CardDescription>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="messages" className="space-y-4">
@@ -139,7 +126,7 @@ const Analytics = () => {
                     <TabsTrigger value="conversations">Conversations</TabsTrigger>
                     <TabsTrigger value="response-time">Response Time</TabsTrigger>
                   </TabsList>
-                  
+
                   <TabsContent value="messages" className="space-y-4">
                     <ChartContainer config={chartConfig} className="h-[300px]">
                       <ResponsiveContainer width="100%" height="100%">
@@ -148,13 +135,7 @@ const Analytics = () => {
                           <XAxis dataKey="name" />
                           <YAxis />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line
-                            type="monotone"
-                            dataKey="messages"
-                            stroke="var(--color-messages)"
-                            strokeWidth={2}
-                            dot={{ fill: "var(--color-messages)" }}
-                          />
+                          <Line type="monotone" dataKey="messages" stroke="var(--color-messages)" strokeWidth={2} dot={{ fill: "var(--color-messages)" }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -168,13 +149,7 @@ const Analytics = () => {
                           <XAxis dataKey="name" />
                           <YAxis />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line
-                            type="monotone"
-                            dataKey="conversations"
-                            stroke="var(--color-conversations)"
-                            strokeWidth={2}
-                            dot={{ fill: "var(--color-conversations)" }}
-                          />
+                          <Line type="monotone" dataKey="conversations" stroke="var(--color-conversations)" strokeWidth={2} dot={{ fill: "var(--color-conversations)" }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -188,13 +163,7 @@ const Analytics = () => {
                           <XAxis dataKey="name" />
                           <YAxis />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Line
-                            type="monotone"
-                            dataKey="responseTime"
-                            stroke="var(--color-responseTime)"
-                            strokeWidth={2}
-                            dot={{ fill: "var(--color-responseTime)" }}
-                          />
+                          <Line type="monotone" dataKey="responseTime" stroke="var(--color-responseTime)" strokeWidth={2} dot={{ fill: "var(--color-responseTime)" }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -207,20 +176,14 @@ const Analytics = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Agent Performance</CardTitle>
-                <CardDescription>
-                  Individual agent statistics and performance metrics
-                </CardDescription>
+                <CardDescription>Individual agent statistics and performance metrics</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   <div className="text-center py-12">
                     <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                      No performance data available
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Start using your agents to see performance metrics.
-                    </p>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No performance data available</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Start using your agents to see performance metrics.</p>
                   </div>
                 </div>
               </CardContent>
@@ -230,19 +193,13 @@ const Analytics = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Key Insights</CardTitle>
-                <CardDescription>
-                  AI-powered insights and recommendations
-                </CardDescription>
+                <CardDescription>AI-powered insights and recommendations</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-12">
                   <TrendingUp className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    No data available
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Start using your agents to generate analytics insights.
-                  </p>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No data available</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Start using your agents to generate analytics insights.</p>
                 </div>
               </CardContent>
             </Card>

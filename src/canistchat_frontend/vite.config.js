@@ -9,6 +9,12 @@ dotenv.config({ path: "../../.env" });
 export default defineConfig({
   build: {
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // Avoid eval() usage that triggers CSP errors
+        format: 'es',
+      },
+    },
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -36,6 +42,10 @@ export default defineConfig({
       {
         find: "declarations",
         replacement: fileURLToPath(new URL("../declarations", import.meta.url)),
+      },
+      {
+        find: "@",
+        replacement: fileURLToPath(new URL("./src", import.meta.url)),
       },
       {
         find: "@",

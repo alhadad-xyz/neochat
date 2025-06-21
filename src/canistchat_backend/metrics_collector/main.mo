@@ -33,6 +33,7 @@ actor MetricsCollector {
         #AgentCreation;
         #DocumentUpload;
         #CustomPromptTraining;
+        #AddBalance;
     };
     
     public type UsageRecord = {
@@ -219,14 +220,25 @@ actor MetricsCollector {
                 newBalance;
             };
         };
-        
+        let now = Time.now();
         let updatedBalance: UserBalance = {
             userBalance with
             balance = userBalance.balance + amount;
-            lastUpdated = Time.now();
+            lastUpdated = now;
         };
-        
         userBalances.put(userId, updatedBalance);
+        // Catat top up ke usage history
+        let usageId = generateUsageId();
+        let usage: UsageRecord = {
+            id = usageId;
+            userId = userId;
+            agentId = "topup";
+            timestamp = now;
+            tokens = 0;
+            operation = #AddBalance;
+            cost = -amount; // Negatif artinya saldo bertambah
+        };
+        usageRecords.put(usageId, usage);
         #ok(());
     };
     

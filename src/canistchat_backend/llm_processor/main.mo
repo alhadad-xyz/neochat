@@ -63,7 +63,7 @@ actor LLMProcessor {
         #RateLimited;
         #ServiceUnavailable;
     };
-
+    
     // Counter for generating message IDs
     private stable var nextMessageId: Nat = 0;
     
@@ -108,9 +108,9 @@ actor LLMProcessor {
                     prompt := prompt # roleText # ": " # message.content # "\n";
                 };
                 prompt := prompt # "\n";
-            };
+                        };
             case null { };
-        };
+                    };
         
         // Add current user message
         prompt := prompt # "User: " # request.userMessage # "\nAssistant: ";
@@ -183,8 +183,8 @@ actor LLMProcessor {
         };
 
         await processWithLLM(prompt)
-    };
-
+        };
+        
     // Get processor status
     public query func getProcessorStatus(): async {healthy: Bool; version: Text; provider: Text} {
         {
@@ -192,8 +192,8 @@ actor LLMProcessor {
             version = "3.0.0-dfinity-llm";
             provider = "dfinity";
         }
-    };
-
+        };
+        
     // Test function
     public func test(): async Text {
         "LLMProcessor canister is running with DFINITY LLM integration!"
@@ -220,7 +220,7 @@ actor LLMProcessor {
                 };
             }
         } catch (err) {
-            {
+        {
                 status = "Error - Health check failed";
                 providers = 1;
                 activeProviders = 0;
