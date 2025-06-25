@@ -383,66 +383,50 @@ dfx canister call agent_manager getLogs --network ic
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+- **JUAN SEBASTIAN CITRO** - (Frontend Developer) - https://github.com/mA4rK0
+- **I PUTU RIO KURNIAWAN** - (Frontend Developer) - https://github.com/Riokurniawan-id
+- **MOHAMMAD KHALID I ALHADAD** - (Backend Developer) - https://github.com/alhadad-xyz
 
-### Development Setup
+### Development Process
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Code Style
+### Coding Standards
 
-- TypeScript for type safety
-- ESLint for code quality
-- Prettier for code formatting
-- Conventional commits for version control
+- **TypeScript** for type safety
+- **ESLint + Prettier** for code formatting
+- **Comprehensive testing** for all features
+- **Documentation** for all public APIs
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🙏 Acknowledgments
 
-### Documentation
-- [API Reference](docs/api.md)
-- [Deployment Guide](docs/deployment.md)
-- [Troubleshooting](docs/troubleshooting.md)
+- **Internet Computer** - Decentralized computing platform
+- **DFINITY Foundation** - Blockchain infrastructure
+- **React Team** - Frontend framework
+- **TypeScript Team** - Type-safe JavaScript
+- **Motoko Team** - Smart contract language
 
-### Community
-- [Discord](https://discord.gg/neochat)
-- [GitHub Issues](https://github.com/neochat/neochat/issues)
-- [GitHub Discussions](https://github.com/neochat/neochat/discussions)
+## 📞 Support
 
-### Enterprise Support
-For enterprise customers, contact us at:
-- Email: enterprise@neochat.com
-- Phone: +1 (555) 123-4567
-
-## 🗺️ Roadmap
-
-### Version 2.1.0 (Q2 2024)
-- [ ] Multi-language agent support
-- [ ] Advanced analytics dashboard
-- [ ] Custom LLM provider integration
-- [ ] Webhook system for external integrations
-
-### Version 2.2.0 (Q3 2024)
-- [ ] Voice chat capabilities
-- [ ] Advanced knowledge base management
-- [ ] Agent marketplace
-- [ ] White-label solutions
-
-### Version 3.0.0 (Q4 2024)
-- [ ] Multi-agent conversations
-- [ ] Advanced AI capabilities
-- [ ] Enterprise features
-- [ ] Mobile applications
+- **Documentation**: [docs/](./docs/)
+- **Issues**: [GitHub Issues](https://github.com/alhadad-xyz/neochat/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/alhadad-xyz/neochat/discussions)
+- **Email**: alhadad.dev@gmail.com
 
 ---
 
-**Made with ❤️ by the NeoChat Team**
+<div align="center">
 
-[Website](https://neochat.com) | [Documentation](https://docs.neochat.com) | [Blog](https://blog.neochat.com) 
+**Built with ❤️ on Internet Computer**
+
+[Website](https://giyqx-pqaaa-aaaab-aagza-cai.icp0.io/) • [Twitter](https://twitter.com/neochat) • [Discord](https://discord.gg/neochat)
+
+</div>
