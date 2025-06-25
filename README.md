@@ -1,10 +1,10 @@
-# CanistChat - AI Agent Platform
+# NeoChat - AI Agent Platform
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/canistchat/canistchat)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/neochat/neochat)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![DFX](https://img.shields.io/badge/dfx-latest-orange.svg)](https://internetcomputer.org/docs/current/developer-docs/setup/install/)
 
-> **CanistChat** is a comprehensive AI agent platform built on the Internet Computer, enabling users to create, configure, and deploy intelligent conversational agents with advanced features like context management, knowledge bases, and real-time analytics.
+> **NeoChat** is a comprehensive AI agent platform built on the Internet Computer, enabling users to create, configure, and deploy intelligent conversational agents with advanced features like context management, knowledge bases, and real-time analytics.
 
 ## 🚀 Features
 
@@ -49,7 +49,7 @@
 ```
 
 ### Canister Architecture
-- **`canistchat_frontend`**: React-based user interface
+- **`neochat_frontend`**: React-based user interface
 - **`agent_manager`**: Agent lifecycle and configuration management
 - **`llm_processor`**: LLM integration and message processing
 - **`metrics_collector`**: Usage tracking and analytics
@@ -67,14 +67,14 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/canistchat/canistchat.git
-   cd canistchat
+   git clone https://github.com/neochat/neochat.git
+   cd neochat
    ```
 
 2. **Install dependencies**
    ```bash
    npm install
-   cd src/canistchat_frontend && npm install
+   cd src/neochat_frontend && npm install
    ```
 
 3. **Start local development**
@@ -85,7 +85,7 @@
 
 4. **Open the application**
    ```bash
-   dfx canister id canistchat_frontend
+   dfx canister id neochat_frontend
    # Open the returned URL in your browser
    ```
 
@@ -242,9 +242,9 @@ const usage = await canisterService.getUsageHistory(100);
 ### JavaScript/TypeScript SDK
 
 ```typescript
-import { CanistChatSDK } from '@canistchat/sdk';
+import { NeoChatSDK } from '@neochat/sdk';
 
-const sdk = new CanistChatSDK({
+const sdk = new NeoChatSDK({
   canisterId: 'your_canister_id',
   network: 'ic'
 });
@@ -265,18 +265,18 @@ const response = await sdk.chat('agent-id', 'Hello!');
 ### React Integration
 
 ```tsx
-import { CanistChatProvider, useCanistChat } from '@canistchat/react';
+import { NeoChatProvider, useNeoChat } from '@neochat/react';
 
 function App() {
   return (
-    <CanistChatProvider canisterId="your_canister_id">
+    <NeoChatProvider canisterId="your_canister_id">
       <ChatInterface />
-    </CanistChatProvider>
+    </NeoChatProvider>
   );
 }
 
 function ChatInterface() {
-  const { agents, sendMessage, isLoading } = useCanistChat();
+  const { agents, sendMessage, isLoading } = useNeoChat();
   
   return (
     <div>
@@ -296,7 +296,7 @@ function ChatInterface() {
 
 ```bash
 # Run frontend tests
-cd src/canistchat_frontend
+cd src/neochat_frontend
 npm test
 
 # Run backend tests
@@ -396,13 +396,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Troubleshooting](docs/troubleshooting.md)
 
 ### Community
-- [Discord](https://discord.gg/canistchat)
-- [GitHub Issues](https://github.com/canistchat/canistchat/issues)
-- [GitHub Discussions](https://github.com/canistchat/canistchat/discussions)
+- [Discord](https://discord.gg/neochat)
+- [GitHub Issues](https://github.com/neochat/neochat/issues)
+- [GitHub Discussions](https://github.com/neochat/neochat/discussions)
 
 ### Enterprise Support
 For enterprise customers, contact us at:
-- Email: enterprise@canistchat.com
+- Email: enterprise@neochat.com
 - Phone: +1 (555) 123-4567
 
 ## 🗺️ Roadmap
@@ -427,6 +427,6 @@ For enterprise customers, contact us at:
 
 ---
 
-**Made with ❤️ by the CanistChat Team**
+**Made with ❤️ by the NeoChat Team**
 
-[Website](https://canistchat.com) | [Documentation](https://docs.canistchat.com) | [Blog](https://blog.canistchat.com) 
+[Website](https://neochat.com) | [Documentation](https://docs.neochat.com) | [Blog](https://blog.neochat.com) 
