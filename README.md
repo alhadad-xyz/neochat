@@ -1,5 +1,21 @@
 # NeoChat - AI Agent Platform
 
+<div align="center">
+
+![NeoChat Logo](./src/canistchat_frontend/public/logo2.svg)
+
+**Decentralized AI Agent Platform powered by Internet Computer**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Built on IC](https://img.shields.io/badge/Built%20on-Internet%20Computer-29ABE2)](https://internetcomputer.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-%2320232a.svg?logo=react&logoColor=%2361DAFB)](https://reactjs.org/)
+[![Motoko](https://img.shields.io/badge/Motoko-0066CC?logo=internet-computer&logoColor=white)](https://internetcomputer.org/docs/current/motoko/intro/)
+
+[Live Demo](https://giyqx-pqaaa-aaaab-aagza-cai.icp0.io/) • [Documentation](./docs/) • [SDK](./sdk/) • [API Reference](./docs/Technical-Testing-Guide.md)
+
+</div>
+
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/neochat/neochat)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![DFX](https://img.shields.io/badge/dfx-latest-orange.svg)](https://internetcomputer.org/docs/current/developer-docs/setup/install/)
