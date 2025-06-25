@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ChartBarIcon,
-  ChatBubbleLeftRightIcon,
-  ClockIcon,
-  DocumentTextIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  StarIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
-  CurrencyDollarIcon,
-  CpuChipIcon
 } from '@heroicons/react/24/outline';
 import { Agent } from '../types';
 import { canisterService, UsageRecord, UserBalance } from '../services/canisterService';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { TrendingUp, TrendingDown, FileText, MessageSquare, Clock } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 
 interface AnalyticsProps {
   sessionToken: string | null;
@@ -28,7 +23,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
       totalConversations: number;
       averageResponseTime: number;
       successRate: number;
-      totalTokensUsed: number;
+      totalCost: number;
     };
     agentPerformance: Array<{
       agentId: string;
@@ -37,27 +32,52 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
       conversations: number;
       avgResponseTime: number;
       satisfaction: number;
-      tokensUsed: number;
+      cost: number;
       status: string;
     }>;
     usageHistory: UsageRecord[];
     userBalance: UserBalance | null;
+    conversationHistory: Array<{
+      contextId: string;
+      messageCount: number;
+      created: Date;
+      lastAccessed: Date;
+    }>;
   }>({
     overview: {
       totalMessages: 0,
       totalConversations: 0,
       averageResponseTime: 0,
       successRate: 0,
-      totalTokensUsed: 0
+      totalCost: 0
     },
     agentPerformance: [],
     usageHistory: [],
-    userBalance: null
+    userBalance: null,
+    conversationHistory: []
   });
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('7d');
-  const [selectedMetric, setSelectedMetric] = useState('messages');
   const [error, setError] = useState<string | null>(null);
+
+
+
+  // Generate usage data from analytics history or use sample data
+  const usageData = analyticsData.usageHistory.length > 0 
+    ? analyticsData.usageHistory.slice(-7).map((record, index) => ({
+        name: new Date(Number(record.timestamp) / 1000000).toLocaleDateString('en-US', { weekday: 'short' }),
+        messages: Math.floor(record.cost / 0.01), // Estimate messages from cost (assuming ~$0.01 per message)
+        conversations: Math.floor(record.cost / 0.03), // Estimate conversations from cost
+        responseTime: 1.0 + Math.random() * 0.5, // Sample response time
+      }))
+    : [
+        { name: 'Mon', messages: 12, conversations: 8, responseTime: 1.2 },
+        { name: 'Tue', messages: 19, conversations: 12, responseTime: 1.1 },
+        { name: 'Wed', messages: 3, conversations: 2, responseTime: 1.5 },
+        { name: 'Thu', messages: 5, conversations: 3, responseTime: 1.3 },
+        { name: 'Fri', messages: 2, conversations: 1, responseTime: 1.4 },
+        { name: 'Sat', messages: 9, conversations: 6, responseTime: 1.0 },
+        { name: 'Sun', messages: 15, conversations: 10, responseTime: 0.9 },
+      ];
 
   useEffect(() => {
     const loadAnalyticsData = async () => {
@@ -78,7 +98,26 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
           averageResponseTime: data.overview?.averageResponseTime
         });
         
-        setAnalyticsData(data);
+        // Get conversation history for selected agent if available
+        let conversationHistory: Array<{
+          contextId: string;
+          messageCount: number;
+          created: Date;
+          lastAccessed: Date;
+        }> = [];
+        
+        if (selectedAgent) {
+          try {
+            conversationHistory = await canisterService.getAgentConversationHistory(selectedAgent.id, 20);
+          } catch (error) {
+            console.warn('Could not fetch conversation history:', error);
+          }
+        }
+        
+        setAnalyticsData({
+          ...data,
+          conversationHistory
+        });
       } catch (error) {
         console.error('Error loading analytics data:', error);
         setError('Failed to load analytics data. Please try again.');
@@ -90,11 +129,12 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
             totalConversations: 0,
             averageResponseTime: 0,
             successRate: 0,
-            totalTokensUsed: 0
+            totalCost: 0
           },
           agentPerformance: [],
           usageHistory: [],
-          userBalance: null
+          userBalance: null,
+          conversationHistory: []
         });
       } finally {
         setLoading(false);
@@ -104,57 +144,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
     loadAnalyticsData();
   }, [sessionToken]);
 
-  const overviewMetrics = [
-    {
-      name: 'Total Messages',
-      value: analyticsData.overview.totalMessages.toLocaleString(),
-      change: analyticsData.overview.totalMessages > 0 ? '+12.5%' : '0%',
-      changeType: analyticsData.overview.totalMessages > 0 ? 'increase' as const : 'neutral' as const,
-      icon: DocumentTextIcon,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-    },
-    {
-      name: 'Total Conversations',
-      value: analyticsData.overview.totalConversations.toLocaleString(),
-      change: analyticsData.overview.totalConversations > 0 ? '+8.3%' : '0%',
-      changeType: analyticsData.overview.totalConversations > 0 ? 'increase' as const : 'neutral' as const,
-      icon: ChatBubbleLeftRightIcon,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-    },
-    {
-      name: 'Avg Response Time',
-      value: `${analyticsData.overview.averageResponseTime.toFixed(1)}s`,
-      change: analyticsData.overview.averageResponseTime > 0 ? '-15.2%' : '0%',
-      changeType: analyticsData.overview.averageResponseTime > 0 ? 'decrease' as const : 'neutral' as const,
-      icon: ClockIcon,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-    },
-    {
-      name: 'Success Rate',
-      value: `${analyticsData.overview.successRate.toFixed(1)}%`,
-      change: analyticsData.overview.successRate > 95 ? '+2.1%' : '0%',
-      changeType: analyticsData.overview.successRate > 95 ? 'increase' as const : 'neutral' as const,
-      icon: ChartBarIcon,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-    },
-  ];
 
-  const timeRangeOptions = [
-    { value: '7d', label: '7 Days' },
-    { value: '30d', label: '30 Days' },
-    { value: '90d', label: '90 Days' },
-    { value: '1y', label: '1 Year' },
-  ];
-
-  const metricOptions = [
-    { value: 'messages', label: 'Messages' },
-    { value: 'conversations', label: 'Conversations' },
-    { value: 'tokens', label: 'Tokens Used' },
-  ];
 
   if (loading) {
     return (
@@ -175,329 +165,340 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="md:flex md:items-center md:justify-between">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-            Analytics
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
+    <main className="p-8">
+    <div className="max-w-7xl mx-auto space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             Comprehensive insights into your AI agent performance and usage patterns.
           </p>
         </div>
-        <div className="mt-4 flex space-x-3 md:ml-4 md:mt-0">
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {timeRangeOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Select defaultValue="7days">
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7days">7 Days</SelectItem>
+            <SelectItem value="30days">30 Days</SelectItem>
+            <SelectItem value="90days">90 Days</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="flex">
-            <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
-            <div className="ml-3">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analyticsData.overview.totalMessages.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              {analyticsData.overview.totalMessages > 0 ? '+12.5%' : '+0%'} from last month
+            </p>
+          </CardContent>
+        </Card>
 
-      {/* Overview Metrics */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {overviewMetrics.map((metric) => (
-          <div key={metric.name} className="bg-white px-4 py-6 shadow rounded-lg border border-gray-200">
-            <div className="flex items-center">
-              <div className={`flex-shrink-0 ${metric.bgColor} p-3 rounded-lg`}>
-                <metric.icon className={`h-6 w-6 ${metric.color}`} />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">{metric.name}</dt>
-                  <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">{metric.value}</div>
-                    {metric.changeType !== 'neutral' && (
-                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${
-                        metric.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {metric.changeType === 'increase' ? (
-                          <ArrowUpIcon className="h-4 w-4 flex-shrink-0" />
-                        ) : (
-                          <ArrowDownIcon className="h-4 w-4 flex-shrink-0" />
-                        )}
-                        <span className="sr-only">{metric.changeType === 'increase' ? 'Increased' : 'Decreased'} by</span>
-                        {metric.change}
-                      </div>
-                    )}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        ))}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Conversations</CardTitle>
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analyticsData.overview.totalConversations.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              {analyticsData.overview.totalConversations > 0 ? '+8.3%' : '+0%'} from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analyticsData.overview.averageResponseTime.toFixed(1)}s</div>
+            <p className="text-xs text-muted-foreground">
+              {analyticsData.overview.averageResponseTime > 0 ? '-15.2%' : '+0%'} from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analyticsData.overview.successRate.toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground">
+              {analyticsData.overview.successRate > 95 ? '+2.1%' : '+0%'} from last month
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* User Balance Card */}
-      {analyticsData.userBalance && (
-        <div className="bg-white shadow rounded-lg border border-gray-200">
-          <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Account Balance</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-green-50 p-3 rounded-lg">
-                  <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Current Balance</p>
-                  <p className="text-2xl font-semibold text-gray-900">${analyticsData.userBalance.balance.toFixed(2)}</p>
-                </div>
+      {/* Usage Trends Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Usage Trends</CardTitle>
+          <CardDescription>
+            Track your AI agent usage patterns over time
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="messages" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="messages">Messages</TabsTrigger>
+              <TabsTrigger value="conversations">Conversations</TabsTrigger>
+              <TabsTrigger value="response-time">Response Time</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="messages" className="space-y-4">
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={usageData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="messages"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={{ fill: "#3b82f6" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-blue-50 p-3 rounded-lg">
-                  <CpuChipIcon className="h-6 w-6 text-blue-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Current Tier</p>
-                  <p className="text-2xl font-semibold text-gray-900">{analyticsData.userBalance.currentTier}</p>
-                </div>
+            </TabsContent>
+
+            <TabsContent value="conversations" className="space-y-4">
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={usageData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="conversations"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      dot={{ fill: "#10b981" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-purple-50 p-3 rounded-lg">
-                  <DocumentTextIcon className="h-6 w-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Monthly Usage</p>
-                  <p className="text-2xl font-semibold text-gray-900">{analyticsData.userBalance.monthlyUsage.toLocaleString()}</p>
-                </div>
+            </TabsContent>
+
+            <TabsContent value="response-time" className="space-y-4">
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={usageData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="responseTime"
+                      stroke="#8b5cf6"
+                      strokeWidth={2}
+                      dot={{ fill: "#8b5cf6" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
       {/* Agent Performance */}
-      <div className="bg-white shadow rounded-lg border border-gray-200">
-        <div className="p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Agent Performance</h3>
-          {analyticsData.agentPerformance.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Agent
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Messages
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Conversations
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tokens Used
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Avg Response Time
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Satisfaction
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {analyticsData.agentPerformance.map((agent) => (
-                    <tr key={agent.agentId} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{agent.agentName}</div>
-                        <div className="text-sm text-gray-500">{agent.agentId}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          agent.status === 'Active'
-                            ? 'bg-green-100 text-green-800'
-                            : agent.status === 'Inactive'
-                            ? 'bg-gray-100 text-gray-800'
-                            : agent.status === 'Suspended'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {agent.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {agent.messages.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {agent.conversations.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {agent.tokensUsed.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {agent.avgResponseTime.toFixed(1)}s
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <StarIcon className="h-4 w-4 text-yellow-400 mr-1" />
-                          <span className="text-sm text-gray-900">{agent.satisfaction.toFixed(1)}</span>
+      <Card>
+        <CardHeader>
+          <CardTitle>Agent Performance</CardTitle>
+          <CardDescription>
+            Individual agent statistics and performance metrics
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {analyticsData.agentPerformance.length > 0 ? (
+              <div className="space-y-4">
+                {analyticsData.agentPerformance.map((agent) => (
+                  <div key={agent.agentId} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900 dark:text-white">{agent.agentName}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Status: {agent.status}</p>
+                    </div>
+                    <div className="grid grid-cols-4 gap-4 text-center">
+                      <div>
+                        <div className="text-lg font-semibold text-gray-900 dark:text-white">{agent.messages}</div>
+                        <div className="text-xs text-gray-500">Messages</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold text-gray-900 dark:text-white">{agent.conversations}</div>
+                        <div className="text-xs text-gray-500">Conversations</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold text-gray-900 dark:text-white">{agent.avgResponseTime.toFixed(1)}s</div>
+                        <div className="text-xs text-gray-500">Avg Response</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                          ${agent.cost.toFixed(2)}
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No performance data available</h3>
-              <p className="mt-1 text-sm text-gray-500">Start using your agents to see performance metrics.</p>
-            </div>
-          )}
-        </div>
-      </div>
+                        <div className="text-xs text-gray-500">Cost</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  No performance data available
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Start using your agents to see performance metrics.
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Usage History */}
-      <div className="bg-white shadow rounded-lg border border-gray-200">
-        <div className="p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Usage History</h3>
-          {analyticsData.usageHistory.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Agent
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Operation
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tokens
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cost
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {analyticsData.usageHistory.slice(0, 10).map((record) => (
-                    <tr key={record.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(record.timestamp).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.agentId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.operation}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.tokens.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${record.cost.toFixed(4)}
-                      </td>
-                    </tr>
+      {/* Conversation History */}
+      {selectedAgent && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Conversations</CardTitle>
+            <CardDescription>
+              Latest conversations for {selectedAgent.name}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {analyticsData.conversationHistory.length > 0 ? (
+                <div className="space-y-4">
+                  {analyticsData.conversationHistory.map((conversation) => (
+                    <div key={conversation.contextId} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900 dark:text-white">
+                          Conversation {conversation.contextId.substring(0, 8)}...
+                        </h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Started: {conversation.created.toLocaleDateString()} at {conversation.created.toLocaleTimeString()}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Last activity: {conversation.lastAccessed.toLocaleDateString()} at {conversation.lastAccessed.toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-gray-900 dark:text-white">{conversation.messageCount}</div>
+                        <div className="text-xs text-gray-500">Messages</div>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    No conversations yet
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Start chatting with {selectedAgent.name} to see conversation history.
+                  </p>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No usage history available</h3>
-              <p className="mt-1 text-sm text-gray-500">Usage data will appear here as you interact with your agents.</p>
-            </div>
-          )}
-        </div>
-      </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Key Insights */}
-      <div className="bg-white shadow rounded-lg border border-gray-200">
-        <div className="p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Key Insights</h3>
+      <Card>
+        <CardHeader>
+          <CardTitle>Key Insights</CardTitle>
+          <CardDescription>
+            AI-powered insights and recommendations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           {analyticsData.overview.totalMessages > 0 || analyticsData.agentPerformance.length > 0 ? (
             <div className="space-y-4">
-              {analyticsData.overview.totalMessages > 0 && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <ArrowTrendingUpIcon className="h-5 w-5 text-green-500" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-gray-900">
-                      <strong>Total of {analyticsData.overview.totalMessages.toLocaleString()} messages processed</strong> across all your agents. 
-                      Your AI assistants are actively helping users with their queries.
+              {analyticsData.overview.successRate > 95 && (
+                <div className="flex items-start space-x-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-green-900 dark:text-green-100">Excellent Success Rate</h4>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      Your agents are performing excellently with a {analyticsData.overview.successRate.toFixed(1)}% success rate.
                     </p>
                   </div>
                 </div>
               )}
-              {analyticsData.overview.totalConversations > 0 && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-gray-900">
-                      <strong>{analyticsData.overview.totalConversations.toLocaleString()} conversations initiated</strong> with your agents. 
-                      Users are engaging meaningfully with your AI assistants.
+              
+              {analyticsData.overview.averageResponseTime < 2.0 && analyticsData.overview.totalMessages > 0 && (
+                <div className="flex items-start space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100">Fast Response Times</h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Your agents are responding quickly with an average of {analyticsData.overview.averageResponseTime.toFixed(1)}s response time.
                     </p>
                   </div>
                 </div>
               )}
-              {analyticsData.overview.totalTokensUsed > 0 && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <CpuChipIcon className="h-5 w-5 text-purple-500" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-gray-900">
-                      <strong>{analyticsData.overview.totalTokensUsed.toLocaleString()} tokens consumed</strong> for AI processing. 
-                      This represents the computational resources used by your agents.
+              
+              {analyticsData.agentPerformance.length > 1 && (
+                <div className="flex items-start space-x-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <BarChart3 className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-purple-900 dark:text-purple-100">Multiple Active Agents</h4>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      You have {analyticsData.agentPerformance.length} agents working. Consider optimizing the top performers for better results.
                     </p>
                   </div>
                 </div>
               )}
-              {analyticsData.agentPerformance.length > 0 && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <StarIcon className="h-5 w-5 text-yellow-500" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-gray-900">
-                      <strong>{analyticsData.agentPerformance.length} active agents</strong> in your system. 
-                      Consider optimizing high-performing agents and improving underperforming ones.
+              
+              {analyticsData.userBalance && analyticsData.userBalance.balance < 10 && (
+                <div className="flex items-start space-x-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-orange-900 dark:text-orange-100">Low Balance Warning</h4>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      Your balance is running low (${analyticsData.userBalance.balance.toFixed(2)}). Consider adding funds to continue using your agents.
                     </p>
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-center py-6">
-              <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No data available</h3>
-              <p className="mt-1 text-sm text-gray-500">Start using your agents to generate analytics insights.</p>
+            <div className="text-center py-12">
+              <TrendingUp className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No data available
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Start using your agents to generate analytics insights.
+              </p>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
+  </main>
   );
 };
 

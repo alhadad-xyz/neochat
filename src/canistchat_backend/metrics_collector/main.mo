@@ -9,23 +9,27 @@ import Float "mo:base/Float";
 import Iter "mo:base/Iter";
 
 actor MetricsCollector {
-    // Types based on the tiered pricing model from creative phase
+    // ============================================================================
+    // PURE SUBSCRIPTION MODEL - No Balance System
+    // ============================================================================
+    
     public type UserId = Principal;
     public type AgentId = Text;
     public type UsageId = Text;
     
-    public type PricingTier = {
-        #Base;      // 0-1000 tokens/month: 0.001 ICRC per token
-        #Standard;  // 1001-10000 tokens: 0.0008 ICRC per token  
-        #Professional; // 10001-100000 tokens: 0.0006 ICRC per token
-        #Enterprise;   // 100000+ tokens: 0.0004 ICRC per token
+    // Subscription tiers with monthly allowances
+    public type SubscriptionTier = {
+        #Free;        // 100 messages/month, $0/month
+        #Base;        // 1,000 messages/month, $9.99/month
+        #Pro;         // 5,000 messages/month, $29.99/month
+        #Enterprise;  // 20,000 messages/month, $99.99/month
     };
     
     public type FeatureType = {
-        #BasicChat;           // 1x multiplier
-        #DocumentIntegration; // 1.5x multiplier
-        #AdvancedPrompts;     // 2x multiplier
-        #ChainFusion;         // 3x multiplier
+        #BasicChat;           // Standard chat functionality
+        #DocumentIntegration; // Document upload and processing
+        #AdvancedPrompts;     // Custom prompt templates
+        #ChainFusion;         // Multi-agent conversations
     };
     
     public type OperationType = {
@@ -42,19 +46,24 @@ actor MetricsCollector {
         timestamp: Time.Time;
         tokens: Nat;
         operation: OperationType;
-        cost: Float; // ICRC tokens
+        cost: Float; // USD cost
     };
     
-    public type UserBalance = {
+    // New subscription-based user model (no balance)
+    public type UserSubscription = {
         userId: UserId;
-        balance: Float; // ICRC tokens
-        monthlyUsage: Nat; // tokens used this month
-        currentTier: PricingTier;
+        currentTier: SubscriptionTier;
+        monthlyUsage: Nat; // messages used this month
+        monthlyAllowance: Nat; // messages included in subscription
+        monthlyCost: Float; // USD per month
+        subscriptionStartDate: Time.Time;
+        lastBillingDate: Time.Time;
+        overageCharges: Float; // USD charges for exceeding allowance
         lastUpdated: Time.Time;
     };
     
     public type Error = {
-        #InsufficientBalance;
+        #SubscriptionLimitExceeded;
         #UserNotFound;
         #InvalidUsage;
         #InternalError: Text;
@@ -63,173 +72,222 @@ actor MetricsCollector {
     // Storage
     private stable var nextUsageId: Nat = 0;
     private stable var usageEntries: [(UsageId, UsageRecord)] = [];
-    private stable var balanceEntries: [(UserId, UserBalance)] = [];
+    private stable var subscriptionEntries: [(UserId, UserSubscription)] = [];
     
     private var usageRecords = HashMap.HashMap<UsageId, UsageRecord>(100, Text.equal, Text.hash);
-    private var userBalances = HashMap.HashMap<UserId, UserBalance>(50, Principal.equal, Principal.hash);
+    private var userSubscriptions = HashMap.HashMap<UserId, UserSubscription>(50, Principal.equal, Principal.hash);
     
     // System upgrade hooks
     system func preupgrade() {
         usageEntries := Iter.toArray(usageRecords.entries());
-        balanceEntries := Iter.toArray(userBalances.entries());
+        subscriptionEntries := Iter.toArray(userSubscriptions.entries());
     };
     
     system func postupgrade() {
         usageRecords := HashMap.fromIter<UsageId, UsageRecord>(usageEntries.vals(), usageEntries.size(), Text.equal, Text.hash);
-        userBalances := HashMap.fromIter<UserId, UserBalance>(balanceEntries.vals(), balanceEntries.size(), Principal.equal, Principal.hash);
+        userSubscriptions := HashMap.fromIter<UserId, UserSubscription>(subscriptionEntries.vals(), subscriptionEntries.size(), Principal.equal, Principal.hash);
         usageEntries := [];
-        balanceEntries := [];
+        subscriptionEntries := [];
     };
     
-    // Helper functions
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
     private func generateUsageId(): UsageId {
         nextUsageId += 1;
         "usage_" # Nat.toText(nextUsageId);
     };
     
-    private func getTokenPrice(tier: PricingTier): Float {
+    // Get subscription tier details
+    private func getTierDetails(tier: SubscriptionTier): (Nat, Float) {
         switch (tier) {
-            case (#Base) { 0.001 };
-            case (#Standard) { 0.0008 };
-            case (#Professional) { 0.0006 };
-            case (#Enterprise) { 0.0004 };
+            case (#Free) { (100, 0.0) };
+            case (#Base) { (1000, 9.99) };
+            case (#Pro) { (5000, 29.99) };
+            case (#Enterprise) { (20000, 99.99) };
         };
     };
     
-    private func getFeatureMultiplier(feature: FeatureType): Float {
-        switch (feature) {
-            case (#BasicChat) { 1.0 };
-            case (#DocumentIntegration) { 1.5 };
-            case (#AdvancedPrompts) { 2.0 };
-            case (#ChainFusion) { 3.0 };
-        };
+    // Get monthly allowance for a tier
+    private func getMonthlyAllowance(tier: SubscriptionTier): Nat {
+        let (allowance, _) = getTierDetails(tier);
+        allowance;
     };
     
-    private func determineTier(monthlyUsage: Nat): PricingTier {
-        if (monthlyUsage <= 1000) {
-            #Base
-        } else if (monthlyUsage <= 10000) {
-            #Standard
-        } else if (monthlyUsage <= 100000) {
-            #Professional
-        } else {
-            #Enterprise
-        };
+    // Get monthly cost for a tier
+    private func getMonthlyCost(tier: SubscriptionTier): Float {
+        let (_, cost) = getTierDetails(tier);
+        cost;
     };
     
-    private func calculateCost(tokens: Nat, operation: OperationType, tier: PricingTier): Float {
-        let basePrice = getTokenPrice(tier);
-        let tokensFloat = Float.fromInt(tokens);
-        
-        switch (operation) {
-            case (#MessageProcessing(feature)) {
-                let multiplier = getFeatureMultiplier(feature);
-                basePrice * tokensFloat * multiplier;
-            };
-            case (#AgentCreation) {
-                5.0; // Fixed cost for agent creation
-            };
-            case (#DocumentUpload) {
-                10.0; // Fixed cost for document upload
-            };
-            case (#CustomPromptTraining) {
-                20.0; // Fixed cost for custom prompt training
-            };
-        };
+    // Calculate overage cost (additional charge per message over allowance)
+    private func calculateOverageCost(overageMessages: Nat): Float {
+        let overageRate = 0.01; // $0.01 per additional message
+        Float.fromInt(overageMessages) * overageRate;
     };
     
-    // Public API
+    // Check if current month has reset (for monthly usage tracking)
+    private func isNewBillingMonth(currentTime: Time.Time, lastBillingDate: Time.Time): Bool {
+        // Simple month comparison - in production, use proper date library
+        let currentMonth = currentTime / (30 * 24 * 60 * 60 * 1_000_000_000); // Approximate
+        let lastMonth = lastBillingDate / (30 * 24 * 60 * 60 * 1_000_000_000);
+        currentMonth > lastMonth;
+    };
+    
+    // ============================================================================
+    // PUBLIC API
+    // ============================================================================
+    
+    /**
+     * Record usage for a user
+     * Checks subscription limits and tracks monthly usage
+     */
     public func recordUsage(userId: UserId, agentId: AgentId, tokens: Nat, operation: OperationType): async Result.Result<UsageId, Error> {
-        // Get or create user balance
-        let userBalance = switch (userBalances.get(userId)) {
-            case (?balance) { balance };
-            case null {
-                let newBalance: UserBalance = {
-                    userId = userId;
-                    balance = 0.0;
-                    monthlyUsage = 0;
-                    currentTier = #Base;
-                    lastUpdated = Time.now();
-                };
-                userBalances.put(userId, newBalance);
-                newBalance;
-            };
-        };
-        
-        // Calculate cost
-        let cost = calculateCost(tokens, operation, userBalance.currentTier);
-        
-        // Check if user has sufficient balance
-        if (userBalance.balance < cost) {
-            return #err(#InsufficientBalance);
-        };
-        
-        // Create usage record
-        let usageId = generateUsageId();
         let now = Time.now();
         
-        let usage: UsageRecord = {
-            id = usageId;
-            userId = userId;
-            agentId = agentId;
-            timestamp = now;
-            tokens = tokens;
-            operation = operation;
-            cost = cost;
+        // Get or create user subscription
+        let userSubscription = switch (userSubscriptions.get(userId)) {
+            case (?subscription) { subscription };
+            case null {
+                let newSubscription: UserSubscription = {
+                    userId = userId;
+                    currentTier = #Free;
+                    monthlyUsage = 0;
+                    monthlyAllowance = getMonthlyAllowance(#Free);
+                    monthlyCost = getMonthlyCost(#Free);
+                    subscriptionStartDate = now;
+                    lastBillingDate = now;
+                    overageCharges = 0.0;
+                    lastUpdated = now;
+                };
+                userSubscriptions.put(userId, newSubscription);
+                newSubscription;
+            };
         };
         
-        usageRecords.put(usageId, usage);
-        
-        // Update user balance
-        let newMonthlyUsage = userBalance.monthlyUsage + tokens;
-        let newTier = determineTier(newMonthlyUsage);
-        
-        let updatedBalance: UserBalance = {
-            userBalance with
-            balance = userBalance.balance - cost;
-            monthlyUsage = newMonthlyUsage;
-            currentTier = newTier;
-            lastUpdated = now;
+        // Check if we need to reset monthly usage (new billing month)
+        let updatedSubscription = if (isNewBillingMonth(now, userSubscription.lastBillingDate)) {
+            // Reset monthly usage and billing date
+            {
+                userSubscription with
+                monthlyUsage = 0;
+                lastBillingDate = now;
+                overageCharges = 0.0;
+                lastUpdated = now;
+            };
+        } else {
+            userSubscription;
         };
         
-        userBalances.put(userId, updatedBalance);
+        // Check if user has exceeded their monthly allowance
+        let newMonthlyUsage = updatedSubscription.monthlyUsage + 1; // Count as 1 message
+        let monthlyAllowance = getMonthlyAllowance(updatedSubscription.currentTier);
         
-        #ok(usageId);
+        if (newMonthlyUsage > monthlyAllowance) {
+            // Calculate overage charges
+            let overageMessages = newMonthlyUsage - monthlyAllowance;
+            let overageCost = calculateOverageCost(overageMessages);
+            
+            let finalSubscription: UserSubscription = {
+                updatedSubscription with
+                monthlyUsage = newMonthlyUsage;
+                overageCharges = overageCost;
+                lastUpdated = now;
+            };
+            
+            userSubscriptions.put(userId, finalSubscription);
+            
+            // Still allow the usage but track overage
+            let usageId = generateUsageId();
+            let usage: UsageRecord = {
+                id = usageId;
+                userId = userId;
+                agentId = agentId;
+                timestamp = now;
+                tokens = tokens;
+                operation = operation;
+                cost = 0.0; // No immediate cost, overage charged on next bill
+            };
+            
+            usageRecords.put(usageId, usage);
+            #ok(usageId);
+        } else {
+            // Within monthly allowance
+            let finalSubscription: UserSubscription = {
+                updatedSubscription with
+                monthlyUsage = newMonthlyUsage;
+                lastUpdated = now;
+            };
+            
+            userSubscriptions.put(userId, finalSubscription);
+            
+            let usageId = generateUsageId();
+            let usage: UsageRecord = {
+                id = usageId;
+                userId = userId;
+                agentId = agentId;
+                timestamp = now;
+                tokens = tokens;
+                operation = operation;
+                cost = 0.0; // Included in subscription
+            };
+            
+            usageRecords.put(usageId, usage);
+            #ok(usageId);
+        };
     };
     
-    public query func getUserBalance(userId: UserId): async Result.Result<UserBalance, Error> {
-        switch (userBalances.get(userId)) {
-            case (?balance) { #ok(balance) };
+    /**
+     * Get user subscription information (replaces getUserBalance)
+     */
+    public query func getUserSubscription(userId: UserId): async Result.Result<UserSubscription, Error> {
+        switch (userSubscriptions.get(userId)) {
+            case (?subscription) { #ok(subscription) };
             case null { #err(#UserNotFound) };
         };
     };
     
-    public func addBalance(userId: UserId, amount: Float): async Result.Result<(), Error> {
-        let userBalance = switch (userBalances.get(userId)) {
-            case (?balance) { balance };
+    /**
+     * Update user subscription tier
+     */
+    public func updateSubscriptionTier(userId: UserId, newTier: SubscriptionTier): async Result.Result<(), Error> {
+        let now = Time.now();
+        
+        let userSubscription = switch (userSubscriptions.get(userId)) {
+            case (?subscription) { subscription };
             case null {
-                let newBalance: UserBalance = {
+                let newSubscription: UserSubscription = {
                     userId = userId;
-                    balance = 0.0;
+                    currentTier = newTier;
                     monthlyUsage = 0;
-                    currentTier = #Base;
-                    lastUpdated = Time.now();
+                    monthlyAllowance = getMonthlyAllowance(newTier);
+                    monthlyCost = getMonthlyCost(newTier);
+                    subscriptionStartDate = now;
+                    lastBillingDate = now;
+                    overageCharges = 0.0;
+                    lastUpdated = now;
                 };
-                userBalances.put(userId, newBalance);
-                newBalance;
+                userSubscriptions.put(userId, newSubscription);
+                return #ok(());
             };
         };
         
-        let updatedBalance: UserBalance = {
-            userBalance with
-            balance = userBalance.balance + amount;
-            lastUpdated = Time.now();
+        let updatedSubscription: UserSubscription = {
+            userSubscription with
+            currentTier = newTier;
+            monthlyAllowance = getMonthlyAllowance(newTier);
+            monthlyCost = getMonthlyCost(newTier);
+            lastUpdated = now;
         };
         
-        userBalances.put(userId, updatedBalance);
+        userSubscriptions.put(userId, updatedSubscription);
         #ok(());
     };
     
+    /**
+     * Get usage history for a user
+     */
     public query func getUsageHistory(userId: UserId, limit: ?Nat): async [UsageRecord] {
         let allUsage = Iter.toArray(usageRecords.vals());
         let userUsage = Array.filter<UsageRecord>(allUsage, func(record: UsageRecord): Bool {
@@ -249,19 +307,77 @@ actor MetricsCollector {
         };
     };
     
-    public func test(): async Text {
-        "MetricsCollector canister is running!";
-    };
-
+    /**
+     * Health check for the canister
+     */
     public func healthCheck(): async {
         status: Text;
         totalUsers: Nat;
         totalTransactions: Nat;
     } {
         {
-            status = "Metrics Collector operational";
-            totalUsers = userBalances.size();
+            status = "Metrics Collector operational - Pure Subscription Model";
+            totalUsers = userSubscriptions.size();
             totalTransactions = usageRecords.size();
         }
+    };
+    
+    /**
+     * Test function
+     */
+    public func test(): async Text {
+        "MetricsCollector canister is running with Pure Subscription Model!";
+    };
+    
+    // ============================================================================
+    // LEGACY SUPPORT (for backward compatibility during transition)
+    // ============================================================================
+    
+    /**
+     * Legacy getUserBalance function - now returns subscription info
+     * @deprecated Use getUserSubscription instead
+     */
+    public query func getUserBalance(userId: UserId): async Result.Result<{
+        balance: Float;
+        currentTier: Text;
+        lastUpdated: Time.Time;
+        monthlyUsage: Nat;
+        userId: UserId;
+    }, Error> {
+        switch (userSubscriptions.get(userId)) {
+            case (?subscription) {
+                let tierText = switch (subscription.currentTier) {
+                    case (#Free) { "Free" };
+                    case (#Base) { "Base" };
+                    case (#Pro) { "Pro" };
+                    case (#Enterprise) { "Enterprise" };
+                };
+                
+                #ok({
+                    balance = subscription.monthlyCost; // Return monthly cost as "balance"
+                    currentTier = tierText;
+                    lastUpdated = subscription.lastUpdated;
+                    monthlyUsage = subscription.monthlyUsage;
+                    userId = subscription.userId;
+                });
+            };
+            case null { #err(#UserNotFound) };
+        };
+    };
+    
+    /**
+     * Legacy setUserTier function - now updates subscription
+     * @deprecated Use updateSubscriptionTier instead
+     */
+    public func setUserTier(userId: UserId, tier: Text): async Result.Result<(), Error> {
+        let newTier = switch (tier) {
+            case ("Free") { #Free };
+            case ("Base") { #Base };
+            case ("Pro") { #Pro };
+            case ("Enterprise") { #Enterprise };
+            case _ { #Base }; // Default to Base
+        };
+        
+        await updateSubscriptionTier(userId, newTier);
     };
 } 

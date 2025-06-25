@@ -44,18 +44,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <header className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg border-b border-white/20 dark:border-gray-700/50 px-8 py-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-6">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input
-              placeholder="Search agents, chats, analytics..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="pl-12 w-96 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30 focus:border-blue-500/50 dark:focus:border-blue-400/50 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 rounded-xl"
-            />
-          </div>
-        </div>
+        <div className="flex items-center space-x-6"></div>
         
         <div className="flex items-center space-x-4">
           {/* Theme Toggle */}

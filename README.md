@@ -1,89 +1,74 @@
-# NeoChat
+# CanistChat - AI Agent Platform
 
-<div align="center">
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/canistchat/canistchat)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![DFX](https://img.shields.io/badge/dfx-latest-orange.svg)](https://internetcomputer.org/docs/current/developer-docs/setup/install/)
 
-![NeoChat Logo](./src/canistchat_frontend/public/logo2.svg)
+> **CanistChat** is a comprehensive AI agent platform built on the Internet Computer, enabling users to create, configure, and deploy intelligent conversational agents with advanced features like context management, knowledge bases, and real-time analytics.
 
-**Decentralized AI Agent Platform powered by Internet Computer**
+## 🚀 Features
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Built on IC](https://img.shields.io/badge/Built%20on-Internet%20Computer-29ABE2)](https://internetcomputer.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-%2320232a.svg?logo=react&logoColor=%2361DAFB)](https://reactjs.org/)
-[![Motoko](https://img.shields.io/badge/Motoko-0066CC?logo=internet-computer&logoColor=white)](https://internetcomputer.org/docs/current/motoko/intro/)
+### Core Platform
+- **🤖 AI Agent Management**: Create, configure, and manage intelligent conversational agents
+- **💬 Real-time Chat**: Seamless chat interface with context-aware conversations
+- **🧠 Knowledge Base**: Upload and manage documents, URLs, and custom knowledge sources
+- **📊 Analytics Dashboard**: Comprehensive usage analytics and performance metrics
+- **🔧 Advanced Configuration**: Fine-tune agent personality, behavior, and appearance
 
-[Live Demo](https://neochat.io) • [Documentation](./docs/) • [SDK](./sdk/) • [API Reference](./docs/Technical-Testing-Guide.md)
+### Technical Features
+- **🌐 Internet Computer Native**: Built entirely on the Internet Computer blockchain
+- **🔐 Secure Authentication**: Internet Identity integration for secure user management
+- **⚡ High Performance**: Optimized for speed with caching and circuit breaker patterns
+- **📱 Responsive Design**: Mobile-first design with cross-platform compatibility
+- **🔌 Embeddable Widgets**: Easy integration with any website or application
 
-</div>
-
-## 🚀 Overview
-
-NeoChat is a comprehensive decentralized AI agent platform built on the Internet Computer blockchain. It enables users to create, deploy, and interact with AI agents while providing a complete financial system for usage tracking, billing, and enterprise-grade features.
-
-### ✨ Key Features
-
-- **🤖 AI Agent Creation & Management** - Create custom AI agents with specialized capabilities
-- **💬 Real-time Chat Interface** - Seamless chat experience with AI agents
-- **🔐 Decentralized Authentication** - Secure authentication via Internet Identity
-- **💰 Comprehensive Financial System** - Usage tracking, billing, and tier management
-- **🎨 Embeddable Widgets** - Drop-in chat widgets for any website
-- **📊 Analytics & Insights** - Detailed usage analytics and performance metrics
-- **🛡️ Enterprise Security** - Multi-factor authentication and audit trails
-- **🔧 Developer SDK** - Comprehensive SDK for custom integrations
+### Agent Capabilities
+- **🎭 Personality Customization**: Define tone, style, and communication patterns
+- **🧪 Behavior Tuning**: Configure creativity, temperature, and response patterns
+- **🎨 Visual Customization**: Customize colors, themes, and appearance
+- **📚 Knowledge Integration**: Connect multiple knowledge sources
+- **🔄 Context Management**: Maintain conversation history and context
+- **🌍 Multi-language Support**: Support for multiple languages and locales
 
 ## 🏗️ Architecture
 
-NeoChat uses a multi-canister architecture on the Internet Computer for scalability, security, and modularity:
-
-```mermaid
-graph TB
-    subgraph "Frontend Layer"
-        React[React Frontend]
-        SDK[JavaScript SDK]
-        Widget[Embeddable Widgets]
-    end
-    
-    subgraph "Internet Computer Canisters"
-        AgentManager[Agent Manager<br/>Agent CRUD & Management]
-        LLMProcessor[LLM Processor<br/>AI Response Generation]
-        MetricsCollector[Metrics Collector<br/>Financial & Usage Tracking]
-        AuthProxy[Auth Proxy<br/>Authentication & Sessions]
-        DataStorage[Data Storage<br/>Persistent Data]
-        SecurityManager[Security Manager<br/>MFA & Audit Trails]
-    end
-    
-    subgraph "External Services"
-        II[Internet Identity]
-        LLM[LLM Providers<br/>Ollama]
-    end
-    
-    React --> AgentManager
-    React --> MetricsCollector
-    React --> AuthProxy
-    SDK --> AgentManager
-    Widget --> AgentManager
-    
-    AgentManager --> LLMProcessor
-    LLMProcessor --> LLM
-    AuthProxy --> II
-    AgentManager --> DataStorage
-    MetricsCollector --> SecurityManager
+### System Overview
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend       │    │   External      │
+│   (React)       │◄──►│   (Motoko)      │◄──►│   Services      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   User Interface│    │   Agent Manager │    │   LLM Providers │
+│   Dashboard     │    │   LLM Processor │    │   OpenAI        │
+│   Chat Interface│    │   Metrics       │    │   Anthropic     │
+│   Embed Widget  │    │   Auth Proxy    │    │   Custom APIs   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 🚦 Quick Start
+### Canister Architecture
+- **`canistchat_frontend`**: React-based user interface
+- **`agent_manager`**: Agent lifecycle and configuration management
+- **`llm_processor`**: LLM integration and message processing
+- **`metrics_collector`**: Usage tracking and analytics
+- **`auth_proxy`**: Authentication and session management
+- **`data_storage`**: Conversation and data persistence
+
+## 📦 Installation
 
 ### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [DFX](https://internetcomputer.org/docs/current/developer-docs/setup/install/) (latest version)
+- [Internet Identity](https://identity.ic0.app/) account
 
-- [Node.js](https://nodejs.org/) (v18+)
-- [DFX](https://internetcomputer.org/docs/current/developer-docs/setup/install) (v0.15+)
-- [Mops](https://mops.one/) (for Motoko packages)
-- [Ollama](https://ollama.com/) (for LLM Framework)
-### Local Development
+### Quick Start
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/alhadad-xyz/neochat.git
-   cd neochat
+   git clone https://github.com/canistchat/canistchat.git
+   cd canistchat
    ```
 
 2. **Install dependencies**
@@ -92,266 +77,356 @@ graph TB
    cd src/canistchat_frontend && npm install
    ```
 
-3. **Start local Internet Computer replica**
+3. **Start local development**
    ```bash
-   dfx start --clean --background
-   ```
-
-4. **Pull Internet Identity Canister & LLM Canister**
-   ```bash
-   dfx deps pull
-   dfx deps init internet_identity
-   dfx deps init llm --argument '(opt variant { ollama }, null)'
-   ```
-
-5. **Deploy canisters locally**
-   ```bash
+   dfx start --background
    dfx deploy
-   dfx deps deploy
    ```
 
-7. **Open in browser**
-   ```
-   http://localhost:3000
-   ```
-
-### Quick Deployment
-
-```bash
-# Deploy to Internet Computer mainnet
-dfx deploy --network ic
-
-# Deploy frontend only
-dfx deploy --network ic canistchat_frontend
-```
-
-## 🔧 Development
-
-### Project Structure
-
-```
-neochat/
-├── src/
-│   ├── canistchat_backend/        # Motoko canisters
-│   │   ├── agent_manager/         # Agent CRUD operations
-│   │   ├── llm_processor/         # AI processing
-│   │   ├── metrics_collector/     # Financial system
-│   │   ├── auth_proxy/           # Authentication
-│   │   ├── data_storage/         # Data persistence
-│   │   └── security_manager/     # Security & MFA
-│   ├── canistchat_frontend/      # React frontend
-│   └── declarations/             # Generated TypeScript types
-├── sdk/                          # JavaScript SDK
-├── docs/                         # Documentation
-├── memory-bank/                  # Project documentation
-└── tests/                        # Test suites
-```
-
-### Available Scripts
-
-```bash
-# Development
-npm start                 # Start all services
-npm run dev              # Development mode with hot reload
-npm run build            # Build for production
-npm test                 # Run test suite
-
-# Canister Management
-dfx deploy               # Deploy all canisters
-dfx canister status      # Check canister status
-dfx generate            # Generate TypeScript declarations
-
-# Frontend Development
-cd src/canistchat_frontend
-npm start               # Start React development server
-npm run build          # Build React application
-npm run lint           # Run ESLint
-npm run type-check     # TypeScript type checking
-```
-
-## 💰 Financial System
-
-NeoChat includes a comprehensive financial system with four tiers:
-
-| Tier | Monthly Cost | Messages | Features |
-|------|-------------|----------|----------|
-| **Free** | $0 | 100 | Basic agent creation, chat |
-| **Base** | $9.99 | 1,000 | Advanced customization, analytics |
-| **Pro** | $29.99 | 5,000 | Priority support, custom domains |
-| **Enterprise** | Custom | Unlimited | White-label, dedicated support |
-
-### Usage Tracking
-- Real-time token usage monitoring
-- Automatic billing and overage protection
-- Comprehensive analytics and reporting
-- Payment method management
-
-## 🔐 Security Features
-
-- **Internet Identity Integration** - Passwordless authentication
-- **Multi-Factor Authentication** - 3-tier security system
-- **Session Management** - Secure session lifecycle with rotation
-- **Audit Trails** - Immutable security event logging
-- **Anomaly Detection** - Real-time threat detection
-- **Data Encryption** - End-to-end encryption for sensitive data
-
-## 🎨 SDK & Integration
-
-### JavaScript SDK
-
-```bash
-npm install @neochat/sdk
-```
-
-```javascript
-import { CanistChatSDK } from '@neochat/sdk';
-
-const sdk = new CanistChatSDK({
-  network: 'ic',
-  agentManagerCanisterId: 'your-canister-id'
-});
-
-await sdk.initialize();
-const response = await sdk.chat('agent-id', 'Hello!');
-```
-
-### Embeddable Widget
-
-```html
-<div id="neochat-widget"></div>
-<script>
-(function() {
-  // Widget integration code
-  const widget = new CanistChatWidget({
-    agentId: 'your-agent-id',
-    containerId: 'neochat-widget',
-    theme: 'light'
-  });
-})();
-</script>
-```
-
-### React Integration
-
-```jsx
-import { useCanistChat } from '@neochat/sdk';
-
-function ChatComponent() {
-  const { sdk, isConnected } = useCanistChat({
-    agentManagerCanisterId: 'canister-id'
-  });
-  
-  // Chat implementation
-}
-```
-
-## 📊 Analytics & Monitoring
-
-- **Real-time Usage Metrics** - Token consumption, response times
-- **Financial Analytics** - Revenue tracking, user tier distribution
-- **Performance Monitoring** - Canister health, API response times
-- **Security Analytics** - Authentication events, threat detection
-- **User Behavior** - Chat patterns, agent usage statistics
-
-## 🧪 Testing
-
-### Automated Testing
-
-```bash
-# Run all tests
-npm test
-
-# Run specific test suites
-npm run test:unit          # Unit tests
-npm run test:integration   # Integration tests
-npm run test:e2e          # End-to-end tests
-
-# QA Testing
-./scripts/qa-testing-script.sh local   # Local testing
-./scripts/qa-testing-script.sh ic      # IC mainnet testing
-```
-
-## 🚀 Deployment
-
-### Internet Computer Mainnet
-
-1. **Configure environment**
+4. **Open the application**
    ```bash
-   export DFX_NETWORK=ic
+   dfx canister id canistchat_frontend
+   # Open the returned URL in your browser
    ```
 
-2. **Deploy canisters**
+## 🚀 Production Deployment
+
+### Automated Deployment
+
+Use our production deployment script for easy deployment:
+
+```bash
+# Deploy to production
+./deploy.sh production
+
+# Deploy to staging
+./deploy.sh staging
+
+# Deploy locally
+./deploy.sh local
+```
+
+### Manual Deployment
+
+1. **Build the application**
+   ```bash
+   dfx build
+   ```
+
+2. **Deploy to mainnet**
    ```bash
    dfx deploy --network ic
    ```
 
-3. **Configure frontend**
+3. **Verify deployment**
    ```bash
-   cd src/canistchat_frontend
-   npm run build
-   dfx deploy --network ic canistchat_frontend
+   dfx canister call agent_manager getSystemStats --network ic
    ```
 
 ### Environment Configuration
 
-Create `.env` files for different environments:
+Create a `.env` file in the project root:
+
+```env
+# Network configuration
+DFX_NETWORK=ic
+
+# Canister IDs (auto-generated)
+AGENT_MANAGER_CANISTER_ID=your_agent_manager_id
+LLM_PROCESSOR_CANISTER_ID=your_llm_processor_id
+METRICS_COLLECTOR_CANISTER_ID=your_metrics_collector_id
+
+# External API keys
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+```
+
+## 🔧 Configuration
+
+### Agent Configuration
+
+Agents can be configured with the following parameters:
+
+```typescript
+interface AgentConfig {
+  personality: {
+    tone: string;                    // friendly, formal, professional
+    style: string;                   // customer_support, sales, technical
+    traits: string[];                // helpful, analytical, empathetic
+    communicationStyle: 'Conversational' | 'Professional' | 'Technical';
+    responsePattern: 'Detailed' | 'Concise' | 'Structured';
+  };
+  behavior: {
+    temperature: number;              // 0.0 to 2.0
+    creativity: number;               // 0.0 to 1.0
+    maxTokens: number;                // Maximum response length
+    contextWindow: number;            // Conversation history length
+  };
+  appearance: {
+    primaryColor: string;             // CSS color value
+    theme: 'Light' | 'Dark' | 'Auto';
+    avatar?: string;                  // URL or base64 image
+  };
+  knowledgeBase: KnowledgeSource[];   // Documents, URLs, custom content
+}
+```
+
+### Embed Widget Configuration
+
+```javascript
+const widgetConfig = {
+  agentId: 'your_agent_id',
+  theme: 'light',
+  position: 'bottom-right',
+  primaryColor: '#3B82F6',
+  welcomeMessage: 'Hello! How can I help you today?',
+  placeholder: 'Type your message...',
+  width: '400px',
+  height: '600px'
+};
+```
+
+## 📚 API Documentation
+
+### Agent Management
+
+```typescript
+// Create a new agent
+const agentId = await canisterService.createAgent({
+  name: 'Customer Support Bot',
+  description: 'AI assistant for customer support',
+  category: 'Support',
+  config: agentConfig,
+  isPublic: true
+});
+
+// Get user agents
+const agents = await canisterService.getUserAgents();
+
+// Update agent
+await canisterService.updateAgent(agentId, updates);
+
+// Delete agent
+await canisterService.deleteAgent(agentId);
+```
+
+### Chat Processing
+
+```typescript
+// Send a message to an agent
+const response = await canisterService.processChat(
+  agentId,
+  message,
+  sessionToken
+);
+
+// Get conversation history
+const history = await canisterService.getConversationHistory(conversationId);
+```
+
+### Analytics
+
+```typescript
+// Get comprehensive analytics
+const analytics = await canisterService.getComprehensiveAnalytics();
+
+// Get user balance
+const balance = await canisterService.getUserBalance();
+
+// Get usage history
+const usage = await canisterService.getUsageHistory(100);
+```
+
+## 🔌 SDK Integration
+
+### JavaScript/TypeScript SDK
+
+```typescript
+import { CanistChatSDK } from '@canistchat/sdk';
+
+const sdk = new CanistChatSDK({
+  canisterId: 'your_canister_id',
+  network: 'ic'
+});
+
+// Initialize the SDK
+await sdk.initialize();
+
+// Authenticate user
+const identity = await sdk.authenticate();
+
+// Get agents
+const agents = await sdk.getAgents();
+
+// Start a chat
+const response = await sdk.chat('agent-id', 'Hello!');
+```
+
+### React Integration
+
+```tsx
+import { CanistChatProvider, useCanistChat } from '@canistchat/react';
+
+function App() {
+  return (
+    <CanistChatProvider canisterId="your_canister_id">
+      <ChatInterface />
+    </CanistChatProvider>
+  );
+}
+
+function ChatInterface() {
+  const { agents, sendMessage, isLoading } = useCanistChat();
+  
+  return (
+    <div>
+      {agents.map(agent => (
+        <button key={agent.id} onClick={() => sendMessage(agent.id, 'Hello')}>
+          Chat with {agent.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+## 🧪 Testing
+
+### Unit Tests
 
 ```bash
-# .env.local
-VITE_NETWORK=local
-VITE_AGENT_MANAGER_CANISTER_ID=local-canister-id
+# Run frontend tests
+cd src/canistchat_frontend
+npm test
 
-# .env.production
-VITE_NETWORK=ic
-VITE_AGENT_MANAGER_CANISTER_ID=production-canister-id
+# Run backend tests
+dfx test
 ```
+
+### Integration Tests
+
+```bash
+# Run integration tests
+npm run test:integration
+
+# Run end-to-end tests
+npm run test:e2e
+```
+
+### Performance Tests
+
+```bash
+# Run performance benchmarks
+npm run test:performance
+
+# Run load tests
+npm run test:load
+```
+
+## 📊 Monitoring
+
+### Health Checks
+
+```bash
+# Check canister health
+dfx canister call agent_manager heartbeat --network ic
+dfx canister call llm_processor healthCheck --network ic
+dfx canister call metrics_collector healthCheck --network ic
+```
+
+### Metrics Dashboard
+
+Access the metrics dashboard at:
+```
+https://your-frontend-canister-id.ic0.app/analytics
+```
+
+### Logs
+
+```bash
+# View canister logs
+dfx canister call agent_manager getLogs --network ic
+```
+
+## 🔒 Security
+
+### Authentication
+- Internet Identity integration for secure user authentication
+- Session-based authentication with automatic token refresh
+- Role-based access control for agent management
+
+### Data Protection
+- End-to-end encryption for sensitive data
+- Secure storage of API keys and configuration
+- GDPR-compliant data handling
+
+### Network Security
+- HTTPS enforcement for all communications
+- CORS configuration for secure cross-origin requests
+- Rate limiting to prevent abuse
 
 ## 🤝 Contributing
 
-- **JUAN SEBASTIAN CITRO** - (Frontend Developer) - https://github.com/mA4rK0
-- **I PUTU RIO KURNIAWAN** - (Frontend Developer) - https://github.com/Riokurniawan-id
-- **MOHAMMAD KHALID I ALHADAD** - (Backend Developer) - https://github.com/alhadad-xyz
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-### Development Process
+### Development Setup
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
-### Coding Standards
+### Code Style
 
-- **TypeScript** for type safety
-- **ESLint + Prettier** for code formatting
-- **Comprehensive testing** for all features
-- **Documentation** for all public APIs
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for code formatting
+- Conventional commits for version control
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## 🆘 Support
 
-- **Internet Computer** - Decentralized computing platform
-- **DFINITY Foundation** - Blockchain infrastructure
-- **React Team** - Frontend framework
-- **TypeScript Team** - Type-safe JavaScript
-- **Motoko Team** - Smart contract language
+### Documentation
+- [API Reference](docs/api.md)
+- [Deployment Guide](docs/deployment.md)
+- [Troubleshooting](docs/troubleshooting.md)
 
-## 📞 Support
+### Community
+- [Discord](https://discord.gg/canistchat)
+- [GitHub Issues](https://github.com/canistchat/canistchat/issues)
+- [GitHub Discussions](https://github.com/canistchat/canistchat/discussions)
 
-- **Documentation**: [docs/](./docs/)
-- **Issues**: [GitHub Issues](https://github.com/alhadad-xyz/neochat/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/alhadad-xyz/neochat/discussions)
-- **Email**: support@neochat.io
+### Enterprise Support
+For enterprise customers, contact us at:
+- Email: enterprise@canistchat.com
+- Phone: +1 (555) 123-4567
+
+## 🗺️ Roadmap
+
+### Version 2.1.0 (Q2 2024)
+- [ ] Multi-language agent support
+- [ ] Advanced analytics dashboard
+- [ ] Custom LLM provider integration
+- [ ] Webhook system for external integrations
+
+### Version 2.2.0 (Q3 2024)
+- [ ] Voice chat capabilities
+- [ ] Advanced knowledge base management
+- [ ] Agent marketplace
+- [ ] White-label solutions
+
+### Version 3.0.0 (Q4 2024)
+- [ ] Multi-agent conversations
+- [ ] Advanced AI capabilities
+- [ ] Enterprise features
+- [ ] Mobile applications
 
 ---
 
-<div align="center">
+**Made with ❤️ by the CanistChat Team**
 
-**Built with ❤️ on Internet Computer**
-
-[Website](https://neochat.io) • [Twitter](https://twitter.com/neochat) • [Discord](https://discord.gg/neochat)
-
-</div> 
+[Website](https://canistchat.com) | [Documentation](https://docs.canistchat.com) | [Blog](https://blog.canistchat.com) 

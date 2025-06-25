@@ -175,13 +175,14 @@ export interface UsageData {
 // Component prop types
 export interface AgentCreatorProps {
   sessionToken: string | null;
-  onAgentCreated: () => void;
+  onAgentCreated: (agent: Agent) => void;
 }
 
 export interface AgentListProps {
   sessionToken: string | null;
   onSelectAgent: (agent: Agent | null) => void;
   selectedAgent: Agent | null;
+  onNavigate?: (view: string) => void;
 }
 
 export interface ChatInterfaceProps {

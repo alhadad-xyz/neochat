@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { PaymentForm } from './PaymentForm';
+import React, { useState, useEffect } from 'react';
 import BalanceDisplay from './BalanceDisplay';
+import { PaymentForm } from './PaymentForm';
 import { TransactionHistory } from './TransactionHistory';
 import { PricingTiers } from './PricingTiers';
+import { canisterService, UserSubscription, UsageRecord, AgentResponse } from '../services/canisterService';
 
 interface PaymentManagementProps {
   className?: string;
@@ -10,13 +11,108 @@ interface PaymentManagementProps {
 
 type ActiveTab = 'overview' | 'add-balance' | 'transactions' | 'plans';
 
+// Map backend tier names to PricingTiers component tier names
+const mapBackendTierToPricingTier = (backendTier: string): 'Free' | 'Base' | 'Pro' | 'Enterprise' => {
+  switch (backendTier) {
+    case 'Base':
+      return 'Base';
+    case 'Standard':
+      return 'Base'; // Map Standard to Base for PricingTiers
+    case 'Professional':
+      return 'Pro'; // Map Professional to Pro for PricingTiers
+    case 'Enterprise':
+      return 'Enterprise';
+    default:
+      return 'Base';
+  }
+};
+
 export const PaymentManagement: React.FC<PaymentManagementProps> = ({
   className = ''
 }) => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
-  const [currentTier, setCurrentTier] = useState<'Free' | 'Base' | 'Pro' | 'Enterprise'>('Free');
+  const [currentTier, setCurrentTier] = useState<'Free' | 'Base' | 'Pro' | 'Enterprise'>('Base');
+  const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
+  const [usageHistory, setUsageHistory] = useState<UsageRecord[]>([]);
+  const [agents, setAgents] = useState<AgentResponse[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch user balance and tier from backend
+  useEffect(() => {
+    const fetchUserTier = async () => {
+      try {
+        const userBalance = await canisterService.getUserBalance();
+        if (userBalance) {
+          const mappedTier = mapBackendTierToPricingTier(userBalance.currentTier);
+          setCurrentTier(mappedTier);
+        }
+      } catch (error) {
+        console.error('Error fetching user tier:', error);
+        // Keep default 'Base' tier on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserTier();
+  }, []);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [sub, usage, agentList] = await Promise.all([
+          canisterService.getUserSubscription(),
+          canisterService.getUsageHistory(1000),
+          canisterService.getUserAgents()
+        ]);
+        setSubscription(sub);
+        setUsageHistory(usage);
+        setAgents(agentList);
+        // Debug logs
+        console.log('DEBUG: Subscription from canisterService:', sub);
+        console.log('DEBUG: UsageHistory from canisterService:', usage);
+        console.log('DEBUG: Agents from canisterService:', agentList);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load billing data');
+        console.error('DEBUG: Error fetching billing data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, []);
+
+  // Helper calculations
+  const messagesThisMonth = usageHistory.filter(u => {
+    if (!subscription) return false;
+    const now = new Date();
+    const usageDate = new Date(u.timestamp);
+    return (
+      usageDate.getMonth() === now.getMonth() &&
+      usageDate.getFullYear() === now.getFullYear()
+    );
+  }).length;
+
+  const messagesLastMonth = usageHistory.filter(u => {
+    if (!subscription) return false;
+    const now = new Date();
+    const usageDate = new Date(u.timestamp);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return (
+      usageDate.getMonth() === lastMonth.getMonth() &&
+      usageDate.getFullYear() === lastMonth.getFullYear()
+    );
+  }).length;
+
+  const totalSpent = usageHistory.reduce((sum, u) => sum + (u.cost || 0), 0);
+  const avgPerMessage = messagesThisMonth > 0 ? (totalSpent / messagesThisMonth) : 0;
+  const activeAgents = agents.length;
+  console.log('Agents Billing:', agents);
 
   const handlePaymentSuccess = (amount: number) => {
     console.log(`Payment successful: $${amount}`);
@@ -30,11 +126,26 @@ export const PaymentManagement: React.FC<PaymentManagementProps> = ({
     alert(`Payment failed: ${error}`);
   };
 
-  const handleTierUpgrade = (tier: string) => {
-    console.log(`Upgrading to tier: ${tier}`);
-    setCurrentTier(tier as typeof currentTier);
-    setShowPricingModal(false);
-    alert(`Successfully upgraded to ${tier} plan!`);
+  const handleTierUpgrade = async (tier: string) => {
+    try {
+      setLoading(true);
+      console.log('Upgrading to:', tier);
+      await canisterService.upgradeUserTier(tier);
+      console.log('Upgrade call completed');
+      // Refetch user balance/tier
+      const userBalance = await canisterService.getUserBalance();
+      if (userBalance) {
+        const mappedTier = mapBackendTierToPricingTier(userBalance.currentTier);
+        setCurrentTier(mappedTier);
+      }
+      setShowPricingModal(false);
+      alert(`Successfully upgraded to ${tier} plan!`);
+    } catch (error) {
+      console.error('Upgrade error:', error);
+      alert('Failed to upgrade plan. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTierDowngrade = (tier: string) => {
@@ -54,54 +165,52 @@ export const PaymentManagement: React.FC<PaymentManagementProps> = ({
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
+        if (loading) {
+          return <div className="p-8 text-center text-gray-500">Loading billing data...</div>;
+        }
+        if (error) {
+          return <div className="p-8 text-center text-red-500">{error}</div>;
+        }
         return (
           <div className="space-y-6">
-                        <BalanceDisplay />
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => setShowPaymentModal(true)}
-                    className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                  >
-                    💳 Add Balance
-                  </button>
-                  <button
-                    onClick={() => setShowPricingModal(true)}
-                    className="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium"
-                  >
-                    🚀 Upgrade Plan
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('transactions')}
-                    className="w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium"
-                  >
-                    📋 View Transactions
-                  </button>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                <span className="text-gray-500 text-sm mb-1">Current Plan</span>
+                <span className="text-2xl font-bold">{subscription?.currentTier || '-'}</span>
+                <span className="text-green-600 text-xs mt-1">{subscription?.monthlyCost ? `$${subscription.monthlyCost.toFixed(2)}/mo` : ''}</span>
               </div>
-              
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage Summary</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">This Month</span>
-                    <span className="font-semibold">45 messages</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Last Month</span>
-                    <span className="font-semibold">78 messages</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total Spent</span>
-                    <span className="font-semibold">$12.50</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Avg. per Message</span>
-                    <span className="font-semibold">$0.10</span>
-                  </div>
+              <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                <span className="text-gray-500 text-sm mb-1">This Month</span>
+                <span className="text-2xl font-bold">{messagesThisMonth}</span>
+                <span className="text-xs text-gray-400 mt-1">messages used</span>
+              </div>
+              <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                <span className="text-gray-500 text-sm mb-1">Total Spent</span>
+                <span className="text-2xl font-bold">${totalSpent.toFixed(2)}</span>
+              </div>
+              <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                <span className="text-gray-500 text-sm mb-1">Active Agents</span>
+                <span className="text-2xl font-bold">{activeAgents}</span>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage Overview</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Messages this month</span>
+                  <span className="font-semibold">{messagesThisMonth} / {subscription?.monthlyAllowance || '-'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Last Month</span>
+                  <span className="font-semibold">{messagesLastMonth}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Total Spent</span>
+                  <span className="font-semibold">${totalSpent.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Avg. per Message</span>
+                  <span className="font-semibold">${avgPerMessage.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -137,6 +246,7 @@ export const PaymentManagement: React.FC<PaymentManagementProps> = ({
             onUpgrade={handleTierUpgrade}
             onDowngrade={handleTierDowngrade}
             showCurrentTierOnly={false}
+            isLoading={loading}
           />
         );
 
@@ -144,6 +254,30 @@ export const PaymentManagement: React.FC<PaymentManagementProps> = ({
         return null;
     }
   };
+
+  // Add a debug section to the UI (only in development)
+  {process.env.NODE_ENV === 'development' && (
+    <div className="bg-gray-100 border border-gray-300 rounded p-4 my-6 text-xs overflow-x-auto">
+      <h4 className="font-bold mb-2 text-blue-700">[DEBUG] Raw Data from Canister Service</h4>
+      <div className="mb-2">
+        <span className="font-semibold">Subscription:</span>
+        <pre className="whitespace-pre-wrap break-all">{JSON.stringify(subscription, null, 2)}</pre>
+      </div>
+      <div className="mb-2">
+        <span className="font-semibold">UsageHistory:</span>
+        <pre className="whitespace-pre-wrap break-all">{JSON.stringify(usageHistory, null, 2)}</pre>
+      </div>
+      <div className="mb-2">
+        <span className="font-semibold">Agents:</span>
+        <pre className="whitespace-pre-wrap break-all">{JSON.stringify(agents, null, 2)}</pre>
+      </div>
+      {error && (
+        <div className="mb-2 text-red-600">
+          <span className="font-semibold">Error:</span> {error}
+        </div>
+      )}
+    </div>
+  )}
 
   return (
     <div className={`min-h-screen bg-gray-50 ${className}`}>

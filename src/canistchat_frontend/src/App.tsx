@@ -36,13 +36,6 @@ import { canisterService } from './services/canisterService';
 import DashboardSidebar from './components/dashboard/DashboardSidebar';
 
 function App() {
-  console.log('Environment variables:', {
-    REACT_APP_II_URL: process.env.REACT_APP_II_URL,
-    REACT_APP_AGENT_MANAGER_CANISTER_ID: process.env.REACT_APP_AGENT_MANAGER_CANISTER_ID,
-    REACT_APP_METRICS_COLLECTOR_CANISTER_ID: process.env.REACT_APP_METRICS_COLLECTOR_CANISTER_ID,
-    DFX_NETWORK: process.env.DFX_NETWORK,
-  });
-
   const [activeView, setActiveView] = useState('dashboard');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authClient, setAuthClient] = useState<AuthClient | null>(null);
@@ -57,7 +50,6 @@ function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        console.log('Initializing authentication...');
         const client = await AuthClient.create();
         setAuthClient(client);
         
@@ -65,7 +57,6 @@ function App() {
         await new Promise(resolve => setTimeout(resolve, 100));
         
         const isAuthenticated = await client.isAuthenticated();
-        console.log('AuthClient.isAuthenticated() returned:', isAuthenticated);
         
         // Only consider authenticated if we have a real identity (not anonymous)
         if (isAuthenticated) {
@@ -75,11 +66,8 @@ function App() {
           const principalText = principal.toText();
           const isAnonymous = principalText === '2vxsx-fae'; // Anonymous principal
           
-          console.log('Identity principal:', principalText);
-          console.log('Is anonymous:', isAnonymous);
           
           if (!isAnonymous) {
-            console.log('Setting authenticated state with real identity');
             setIsAuthenticated(true);
           setIdentity(identity);
           // Set up canister service with authenticated identity
@@ -88,7 +76,6 @@ function App() {
             const stableToken = 'session_' + principalText.replace(/[^a-zA-Z0-9]/g, '_');
             setSessionToken(stableToken);
           } else {
-            console.log('Clearing anonymous authentication');
             // Clear any stored authentication
             await client.logout();
             setIsAuthenticated(false);
@@ -98,7 +85,6 @@ function App() {
             await canisterService.setIdentity(null);
           }
         } else {
-          console.log('Not authenticated, setting unauthenticated state');
           setIsAuthenticated(false);
           setIdentity(null);
           setSessionToken(null);
@@ -106,7 +92,6 @@ function App() {
           await canisterService.setIdentity(null);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
         // Don't allow anonymous access - require real authentication
         setIsAuthenticated(false);
         setIdentity(null);
@@ -123,9 +108,8 @@ function App() {
     if (authClient) {
       try {
         const iiUrl = process.env.DFX_NETWORK === 'local' 
-          ? `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:4943`
-          : (process.env.REACT_APP_II_URL || "https://identity.ic0.app");
-        console.log('Using Internet Identity URL:', iiUrl);
+          ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943`
+          : "https://identity.ic0.app";
       await authClient.login({
           identityProvider: iiUrl,
         onSuccess: async () => {
@@ -142,7 +126,6 @@ function App() {
         },
       });
       } catch (error) {
-        console.error('Login failed:', error);
         // Don't allow anonymous access - require real authentication
         setIsAuthenticated(false);
       }
@@ -208,7 +191,7 @@ function SidebarContent({
             <ChatBubbleLeftRightIcon className="h-5 w-5 text-white" />
           </div>
           <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-            CanistChat
+            NeoChat
           </h1>
         </div>
         <button

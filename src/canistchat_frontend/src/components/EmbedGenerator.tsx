@@ -1,3 +1,21 @@
+/**
+ * @fileoverview NeoChat Embed Widget Generator Component
+ * 
+ * This component provides a comprehensive interface for generating embed code
+ * for NeoChat agents. It includes customization options, code generation
+ * for multiple platforms, and testing capabilities.
+ * 
+ * Features:
+ * - Customizable widget appearance and behavior
+ * - Multi-platform code generation (HTML, React, WordPress)
+ * - Live preview and testing capabilities
+ * - Comprehensive documentation and instructions
+ * 
+ * @author NeoChat Development Team
+ * @version 2.0.0
+ * @since 1.0.0
+ */
+
 import React, { useState, useEffect } from 'react';
 import { 
   CodeBracketIcon, 
@@ -14,17 +32,89 @@ import {
 } from '@heroicons/react/24/outline';
 import { Agent } from '../types';
 
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
+/**
+ * Props for the EmbedGenerator component
+ */
 interface EmbedGeneratorProps {
+  /** The agent to generate embed code for */
   agent: Agent | null;
+  /** The canister ID for the deployment */
   canisterId: string;
 }
 
+/**
+ * Available tabs in the embed generator interface
+ */
+type ActiveTab = 'generator' | 'instructions' | 'testing';
+
+/**
+ * Testing modes for the embed widget
+ */
+type TestingMode = 'preview' | 'live';
+
+/**
+ * Copy operation types for tracking success states
+ */
+type CopyType = 'html' | 'react' | 'wordpress';
+
+/**
+ * Widget customization options
+ */
+interface WidgetCustomization {
+  width: string;
+  height: string;
+  theme: 'light' | 'dark' | 'auto';
+  position: 'inline' | 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  primaryColor: string;
+  borderRadius: string;
+  showHeader: boolean;
+  showPoweredBy: boolean;
+  minimizable: boolean;
+  autoOpen: boolean;
+  welcomeMessage: string;
+  placeholder: string;
+}
+
+/**
+ * NeoChat Embed Widget Generator Component
+ * 
+ * Provides a comprehensive interface for generating embed code for NeoChat agents.
+ * Includes customization options, multi-platform code generation, and testing capabilities.
+ * 
+ * @param props - Component props containing agent and canister information
+ * @returns JSX element for the embed generator interface
+ * 
+ * @example
+ * ```tsx
+ * <EmbedGenerator 
+ *   agent={selectedAgent} 
+ *   canisterId="bkyz2-fmaaa-aaaaa-qaaaq-cai" 
+ * />
+ * ```
+ */
 const EmbedGenerator: React.FC<EmbedGeneratorProps> = ({ agent, canisterId }) => {
+  // ============================================================================
+  // STATE MANAGEMENT
+  // ============================================================================
+
+  /** Generated embed code for the current configuration */
   const [embedCode, setEmbedCode] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'generator' | 'instructions' | 'testing'>('generator');
-  const [copySuccess, setCopySuccess] = useState<string | null>(null);
-  const [testingMode, setTestingMode] = useState<'preview' | 'live'>('preview');
-  const [customization, setCustomization] = useState({
+  
+  /** Currently active tab in the interface */
+  const [activeTab, setActiveTab] = useState<ActiveTab>('generator');
+  
+  /** Type of copy operation that was successful */
+  const [copySuccess, setCopySuccess] = useState<CopyType | null>(null);
+  
+  /** Current testing mode (preview or live) */
+  const [testingMode, setTestingMode] = useState<TestingMode>('preview');
+  
+  /** Widget customization settings */
+  const [customization, setCustomization] = useState<WidgetCustomization>({
     width: '400px',
     height: '600px',
     theme: 'light',
@@ -39,44 +129,91 @@ const EmbedGenerator: React.FC<EmbedGeneratorProps> = ({ agent, canisterId }) =>
     placeholder: 'Type your message...'
   });
 
+  // ============================================================================
+  // UTILITY FUNCTIONS
+  // ============================================================================
+
+  /**
+   * Escapes JavaScript strings to prevent syntax errors in generated code
+   * 
+   * This function properly escapes special characters that could break
+   * JavaScript syntax when inserted into string literals.
+   * 
+   * @param str - The string to escape
+   * @returns The escaped string safe for JavaScript string literals
+   * 
+   * @example
+   * ```typescript
+   * const escaped = escapeJsString("Hello! I'm an agent");
+   * // Returns: "Hello! I\'m an agent"
+   * ```
+   */
+  const escapeJsString = (str: string): string => {
+    return str
+      .replace(/\\/g, '\\\\')  // Escape backslashes first
+      .replace(/'/g, "\\'")    // Escape single quotes
+      .replace(/"/g, '\\"')    // Escape double quotes
+      .replace(/\n/g, '\\n')   // Escape newlines
+      .replace(/\r/g, '\\r')   // Escape carriage returns
+      .replace(/\t/g, '\\t');  // Escape tabs
+  };
+
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
+
+  /**
+   * Regenerate embed code when agent or customization changes
+   */
   useEffect(() => {
     if (agent) {
       generateEmbedCode();
     }
   }, [agent, customization]);
 
+  // ============================================================================
+  // CODE GENERATION FUNCTIONS
+  // ============================================================================
+
+  /**
+   * Generates the complete HTML embed code for the widget
+   * 
+   * Creates a self-contained JavaScript snippet that can be embedded
+   * in any HTML page to display the NeoChat widget.
+   */
   const generateEmbedCode = () => {
     if (!agent) return;
 
     const embedScript = `
-<!-- CanistChat Embed Widget -->
+<!-- NeoChat Embed Widget -->
 <div id="canistchat-widget-${agent.id}"></div>
 <script>
 (function() {
-  // CanistChat Widget Configuration
+  // NeoChat Widget Configuration
   const config = {
-    agentId: '${agent.id}',
-    canisterId: '${canisterId}',
-    theme: '${customization.theme}',
-    width: '${customization.width}',
-    height: '${customization.height}',
-    position: '${customization.position}',
-    primaryColor: '${customization.primaryColor}',
-    borderRadius: '${customization.borderRadius}',
+    agentId: '${escapeJsString(agent.id)}',
+    canisterId: '${escapeJsString(canisterId)}',
+    frontendCanisterId: 'giyqx-pqaaa-aaaab-aagza-cai',
+    theme: '${escapeJsString(customization.theme)}',
+    width: '${escapeJsString(customization.width)}',
+    height: '${escapeJsString(customization.height)}',
+    position: '${escapeJsString(customization.position)}',
+    primaryColor: '${escapeJsString(customization.primaryColor)}',
+    borderRadius: '${escapeJsString(customization.borderRadius)}',
     showHeader: ${customization.showHeader},
     showPoweredBy: ${customization.showPoweredBy},
     minimizable: ${customization.minimizable},
     autoOpen: ${customization.autoOpen},
-    title: '${agent.name}',
+    title: '${escapeJsString(agent.name)}',
     subtitle: 'AI Assistant',
-    welcomeMessage: '${customization.welcomeMessage || `Hello! I'm ${agent.name}. How can I help you today?`}',
-    placeholder: '${customization.placeholder}'
+    welcomeMessage: '${escapeJsString(customization.welcomeMessage || `Hello! I'm ${agent.name}. How can I help you today?`)}',
+    placeholder: '${escapeJsString(customization.placeholder)}'
   };
 
   // Create widget container
   const container = document.getElementById('canistchat-widget-' + config.agentId);
   if (!container) {
-    console.error('CanistChat: Widget container not found');
+    console.error('NeoChat: Widget container not found');
     return;
   }
 
@@ -90,11 +227,11 @@ const EmbedGenerator: React.FC<EmbedGeneratorProps> = ({ agent, canisterId }) =>
   if (config.position !== 'inline') {
     switch(config.position) {
       case 'bottom-right':
-        widgetWrapper.style.bottom = '20px';
+        widgetWrapper.style.bottom = '80px';
         widgetWrapper.style.right = '20px';
         break;
       case 'bottom-left':
-        widgetWrapper.style.bottom = '20px';
+        widgetWrapper.style.bottom = '80px';
         widgetWrapper.style.left = '20px';
         break;
       case 'top-right':
@@ -110,12 +247,12 @@ const EmbedGenerator: React.FC<EmbedGeneratorProps> = ({ agent, canisterId }) =>
 
   // Create iframe for secure embedding
   const iframe = document.createElement('iframe');
-  const embedUrl = new URL('https://${canisterId}.ic0.app/embed');
+  const embedUrl = new URL(\`https://\${config.frontendCanisterId}.icp0.io/embed\`);
   embedUrl.searchParams.set('agent', config.agentId);
   embedUrl.searchParams.set('theme', config.theme);
-  embedUrl.searchParams.set('color', encodeURIComponent(config.primaryColor));
-  embedUrl.searchParams.set('welcome', encodeURIComponent(config.welcomeMessage));
-  embedUrl.searchParams.set('placeholder', encodeURIComponent(config.placeholder));
+  embedUrl.searchParams.set('color', config.primaryColor.replace('#', '%23'));
+  embedUrl.searchParams.set('welcome', config.welcomeMessage);
+  embedUrl.searchParams.set('placeholder', config.placeholder);
   
   iframe.src = embedUrl.toString();
   iframe.style.width = config.width;
@@ -207,14 +344,20 @@ const EmbedGenerator: React.FC<EmbedGeneratorProps> = ({ agent, canisterId }) =>
   window.addEventListener('resize', handleResize);
   handleResize();
 
-  console.log('CanistChat widget loaded successfully');
+  console.log('NeoChat widget loaded successfully');
 })();
 </script>`.trim();
 
     setEmbedCode(embedScript);
   };
 
-  const copyToClipboard = async (text: string, type: string) => {
+  /**
+   * Copies text to clipboard and shows success feedback
+   * 
+   * @param text - The text to copy to clipboard
+   * @param type - The type of code being copied (for UI feedback)
+   */
+  const copyToClipboard = async (text: string, type: CopyType) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopySuccess(type);
@@ -233,24 +376,41 @@ const EmbedGenerator: React.FC<EmbedGeneratorProps> = ({ agent, canisterId }) =>
     }
   };
 
+  /**
+   * Generates React component code for embedding the widget
+   * 
+   * Creates a React component that can be imported and used in React applications.
+   * The component renders an iframe with the configured widget settings.
+   * 
+   * @returns React component code as a string, or empty string if no agent
+   */
   const generateReactCode = () => {
     if (!agent) return '';
+    
+    const welcomeMsg = customization.welcomeMessage || `Hello! I'm ${agent.name}. How can I help you today?`;
     
     return `import React from 'react';
 
 const CanistChatWidget = () => {
+  const embedUrl = new URL('https://giyqx-pqaaa-aaaab-aagza-cai.icp0.io/embed');
+  embedUrl.searchParams.set('agent', '${escapeJsString(agent.id)}');
+  embedUrl.searchParams.set('theme', '${escapeJsString(customization.theme)}');
+  embedUrl.searchParams.set('color', '${escapeJsString(customization.primaryColor)}');
+  embedUrl.searchParams.set('welcome', '${escapeJsString(welcomeMsg)}');
+  embedUrl.searchParams.set('placeholder', '${escapeJsString(customization.placeholder)}');
+
   return (
     <iframe
-      src="https://${canisterId}.ic0.app/embed?agent=${encodeURIComponent(agent.id)}&theme=${customization.theme}&color=${encodeURIComponent(customization.primaryColor)}"
-      width="${customization.width}"
-      height="${customization.height}"
+      src={embedUrl.toString()}
+      width="${escapeJsString(customization.width)}"
+      height="${escapeJsString(customization.height)}"
       style={{
         border: 'none',
-        borderRadius: '${customization.borderRadius}',
+        borderRadius: '${escapeJsString(customization.borderRadius)}',
         boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
       }}
       allow="encrypted-media"
-      title="${agent.name} - AI Assistant"
+      title="${escapeJsString(agent.name)} - AI Assistant"
     />
   );
 };
@@ -258,34 +418,59 @@ const CanistChatWidget = () => {
 export default CanistChatWidget;`;
   };
 
+  /**
+   * Generates WordPress shortcode and PHP function code
+   * 
+   * Creates WordPress-specific code including a shortcode for easy embedding
+   * and a PHP function that can be added to theme files for custom integration.
+   * 
+   * @returns WordPress code as a string, or empty string if no agent
+   */
   const generateWordPressCode = () => {
     if (!agent) return '';
     
     return `<!-- Add this shortcode to any page or post -->
-[canistchat agent="${agent.id}" theme="${customization.theme}" color="${customization.primaryColor}" width="${customization.width}" height="${customization.height}"]
+[canistchat agent="${escapeJsString(agent.id)}" theme="${escapeJsString(customization.theme)}" color="${escapeJsString(customization.primaryColor)}" width="${escapeJsString(customization.width)}" height="${escapeJsString(customization.height)}"]
 
 <!-- Or add this to your theme's functions.php file -->
 function canistchat_shortcode($atts) {
     $atts = shortcode_atts(array(
-        'agent' => '${agent.id}',
-        'theme' => '${customization.theme}',
-        'color' => '${customization.primaryColor}',
-        'width' => '${customization.width}',
-        'height' => '${customization.height}'
+        'agent' => '${escapeJsString(agent.id)}',
+        'theme' => '${escapeJsString(customization.theme)}',
+        'color' => '${escapeJsString(customization.primaryColor)}',
+        'width' => '${escapeJsString(customization.width)}',
+        'height' => '${escapeJsString(customization.height)}'
     ), $atts);
     
-    return '<iframe src="https://${canisterId}.ic0.app/embed?agent=' . esc_attr($atts['agent']) . '&theme=' . esc_attr($atts['theme']) . '&color=' . urlencode($atts['color']) . '" width="' . esc_attr($atts['width']) . '" height="' . esc_attr($atts['height']) . '" style="border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" allow="encrypted-media" title="AI Assistant"></iframe>';
+    return '<iframe src="https://giyqx-pqaaa-aaaab-aagza-cai.icp0.io/embed?agent=' . esc_attr($atts['agent']) . '&theme=' . esc_attr($atts['theme']) . '&color=' . urlencode($atts['color']) . '" width="' . esc_attr($atts['width']) . '" height="' . esc_attr($atts['height']) . '" style="border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" allow="encrypted-media" title="AI Assistant"></iframe>';
     }
 add_shortcode('canistchat', 'canistchat_shortcode');`;
   };
 
+  /**
+   * Opens a test window to preview the embed widget
+   * 
+   * Opens a new browser window with the configured widget for live testing.
+   * The window is sized appropriately for widget testing.
+   */
   const openTestWindow = () => {
     if (!agent) return;
     
-    const testUrl = `https://${canisterId}.ic0.app/embed?agent=${encodeURIComponent(agent.id)}&theme=${customization.theme}&color=${encodeURIComponent(customization.primaryColor)}`;
-    window.open(testUrl, '_blank', 'width=500,height=700,scrollbars=yes,resizable=yes');
+    const testUrl = new URL('https://giyqx-pqaaa-aaaab-aagza-cai.icp0.io/embed');
+    testUrl.searchParams.set('agent', agent.id);
+    testUrl.searchParams.set('theme', customization.theme);
+    testUrl.searchParams.set('color', customization.primaryColor);
+    testUrl.searchParams.set('welcome', customization.welcomeMessage || `Hello! I'm ${agent.name}. How can I help you today?`);
+    testUrl.searchParams.set('placeholder', customization.placeholder);
+    
+    window.open(testUrl.toString(), '_blank', 'width=500,height=700,scrollbars=yes,resizable=yes');
   };
 
+  // ============================================================================
+  // RENDER LOGIC
+  // ============================================================================
+
+  // Show placeholder when no agent is selected
   if (!agent) {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
@@ -387,7 +572,7 @@ add_shortcode('canistchat', 'canistchat_shortcode');`;
           </label>
           <select
             value={customization.theme}
-            onChange={(e) => setCustomization({...customization, theme: e.target.value})}
+            onChange={(e) => setCustomization({...customization, theme: e.target.value as 'light' | 'dark' | 'auto'})}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="light">Light</option>
@@ -402,7 +587,7 @@ add_shortcode('canistchat', 'canistchat_shortcode');`;
           </label>
           <select
             value={customization.position}
-            onChange={(e) => setCustomization({...customization, position: e.target.value})}
+            onChange={(e) => setCustomization({...customization, position: e.target.value as 'inline' | 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'})}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="inline">Inline</option>
@@ -802,7 +987,15 @@ add_shortcode('canistchat', 'canistchat_shortcode');`;
                     style={{ width: customization.width, maxWidth: '100%' }}
                   >
                     <iframe
-                      src={`/embed?agent=${encodeURIComponent(agent.id)}&theme=${customization.theme}&color=${encodeURIComponent(customization.primaryColor)}`}
+                      src={(() => {
+                        const previewUrl = new URL('https://giyqx-pqaaa-aaaab-aagza-cai.icp0.io/embed');
+                        previewUrl.searchParams.set('agent', agent.id);
+                        previewUrl.searchParams.set('theme', customization.theme);
+                        previewUrl.searchParams.set('color', customization.primaryColor);
+                        previewUrl.searchParams.set('welcome', customization.welcomeMessage || `Hello! I'm ${agent.name}. How can I help you today?`);
+                        previewUrl.searchParams.set('placeholder', customization.placeholder);
+                        return previewUrl.toString();
+                      })()}
                       width="100%"
                       height={customization.height}
                       style={{

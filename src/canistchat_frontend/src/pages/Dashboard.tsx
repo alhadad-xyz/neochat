@@ -12,6 +12,7 @@ import ChatInterface from '@/components/ChatInterface';
 import UserProfile from '@/components/UserProfile';
 import EmbedGenerator from '@/components/EmbedGenerator';
 import Analytics from '@/components/Analytics';
+import { PricingTiers } from '@/components/PricingTiers';
 
 import { Agent } from '../types';
 import { canisterService, DashboardMetrics, AgentResponse } from '../services/canisterService';
@@ -25,6 +26,7 @@ interface DashboardProps {
   onLogout?: () => void;
   activeView?: string;
 }
+const AGENT_MANAGER_CANISTER_ID = import.meta.env.VITE_CANISTER_ID_AGENT_MANAGER;
 
 const Dashboard: React.FC<DashboardProps> = ({
   sessionToken,
@@ -47,21 +49,28 @@ const Dashboard: React.FC<DashboardProps> = ({
     }
   });
   const [recentAgents, setRecentAgents] = useState<AgentResponse[]>([]);
+  const [allAgents, setAllAgents] = useState<AgentResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [systemStatus, setSystemStatus] = useState<{
-    agentManager: string;
-    llmProcessor: string;
-    contextManager: string;
-    productionAPIs: string;
-  }>({
-    agentManager: 'Unknown',
-    llmProcessor: 'Unknown',
-    contextManager: 'Unknown',
-    productionAPIs: 'Unknown',
-  });
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [notifications] = useState(3); // Mock notification count
+  const [currentTier, setCurrentTier] = useState<'Free' | 'Base' | 'Pro' | 'Enterprise'>('Free'); // Default to Free, will be updated from backend
+
+  // Map backend tier names to frontend tier names
+  const mapBackendTierToFrontend = (backendTier: string): 'Free' | 'Base' | 'Pro' | 'Enterprise' => {
+    switch (backendTier) {
+      case 'Base':
+        return 'Base';
+      case 'Standard':
+        return 'Base'; // Map Standard to Base for frontend
+      case 'Professional':
+        return 'Pro';
+      case 'Enterprise':
+        return 'Enterprise';
+      default:
+        return 'Free';
+    }
+  };
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -80,20 +89,20 @@ const Dashboard: React.FC<DashboardProps> = ({
     switch (activeView) {
       case 'dashboard':
         return (
-          <div className="space-y-8">
-            <div className="mb-10">
-              <div className="flex items-center justify-between mb-6">
+          <div className="space-y-6 md:space-y-8">
+            <div className="mb-6 md:mb-10">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 md:mb-6">
                 <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-3">
+                  <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-2 md:mb-3">
                     Welcome Back!
                   </h1>
-                  <p className="text-lg text-gray-600 dark:text-gray-400">
+                  <p className="text-base md:text-lg text-gray-600 dark:text-gray-400">
                     Here's what's happening with your AI agents today.
                   </p>
                 </div>
-                <div className="hidden md:flex items-center space-x-4">
-                  <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg rounded-2xl px-6 py-3 border border-white/20 dark:border-gray-700/50">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Current Time</div>
+                <div className="hidden lg:flex items-center space-x-4 mt-4 md:mt-0">
+                  <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg rounded-2xl px-4 md:px-6 py-2 md:py-3 border border-white/20 dark:border-gray-700/50">
+                    <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Current Time</div>
                     <div className="font-semibold text-gray-900 dark:text-white">
                       {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
@@ -104,7 +113,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             
             {/* Error Display */}
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 mb-6">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 mb-4 md:mb-6">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -123,10 +132,9 @@ const Dashboard: React.FC<DashboardProps> = ({
             
             <DashboardStats 
               metrics={metrics}
-              systemStatus={systemStatus}
             />
             
-            <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 md:gap-8">
               <div className="xl:col-span-3">
                 <QuickActions 
                   onNavigate={onNavigate}
@@ -146,28 +154,19 @@ const Dashboard: React.FC<DashboardProps> = ({
       
       case 'agents':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                My Agents
-              </h1>
-            </div>
+          <div className="space-y-4 md:space-y-6">
             <AgentList 
               onSelectAgent={onSelectAgent}
               selectedAgent={selectedAgent}
               sessionToken={sessionToken}
+              onNavigate={onNavigate}
             />
           </div>
         );
       
       case 'create':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                Create Agent
-              </h1>
-            </div>
+          <div className="space-y-4 md:space-y-6">
             <AgentCreator 
               sessionToken={sessionToken}
               onAgentCreated={(agent) => {
@@ -180,21 +179,37 @@ const Dashboard: React.FC<DashboardProps> = ({
       
       case 'chat':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                Chat
-              </h1>
-            </div>
+          <div className="h-full">
             {selectedAgent ? (
               <ChatInterface 
                 agent={selectedAgent} 
                 sessionToken={sessionToken}
               />
+            ) : allAgents.length > 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center px-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">Loading Agent</div>
+                  <div className="text-gray-400 dark:text-gray-500 text-sm">Selecting your agent for chat...</div>
+                </div>
+              </div>
             ) : (
-              <div className="text-center py-12">
-                <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">No Agent Selected</div>
-                <div className="text-gray-400 dark:text-gray-500 text-sm">Please select an agent to start chatting.</div>
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center px-4">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">No Agents Available</div>
+                  <div className="text-gray-400 dark:text-gray-500 text-sm mb-4">Create an agent to start chatting.</div>
+                  <button
+                    onClick={() => onNavigate('create')}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    Create Your First Agent
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -202,12 +217,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       
       case 'analytics':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                Analytics
-              </h1>
-            </div>
+          <div className="space-y-4 md:space-y-6">
             <Analytics 
               sessionToken={sessionToken}
               selectedAgent={selectedAgent}
@@ -217,34 +227,24 @@ const Dashboard: React.FC<DashboardProps> = ({
       
       case 'embed':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                Embed Widget
-              </h1>
-            </div>
+          <div className="space-y-4 md:space-y-6">
             {selectedAgent ? (
               <EmbedGenerator 
                 agent={selectedAgent}
-                canisterId={process.env.REACT_APP_AGENT_MANAGER_CANISTER_ID || 'bkyz2-fmaaa-aaaaa-qaaaq-cai'}
+                canisterId={AGENT_MANAGER_CANISTER_ID}
               />
             ) : (
-              <div className="text-center py-12">
+              <div className="text-center py-12 px-4">
                 <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">No Agent Selected</div>
                 <div className="text-gray-400 dark:text-gray-500 text-sm">Please select an agent to generate embed code.</div>
               </div>
             )}
           </div>
         );
-      
+
       case 'profile':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                Profile
-              </h1>
-            </div>
+          <div className="space-y-4 md:space-y-6">
             <UserProfile 
               sessionToken={sessionToken}
               identity={identity}
@@ -254,17 +254,42 @@ const Dashboard: React.FC<DashboardProps> = ({
       
       case 'billing':
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                Billing & Payments
-              </h1>
-            </div>
-            <div className="text-center py-12">
-              <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">Coming Soon</div>
-              <div className="text-gray-400 dark:text-gray-500 text-sm">Billing and payment management features will be available soon.</div>
-            </div>
-          </div>
+          <PricingTiers
+            currentTier={currentTier}
+            sessionToken={sessionToken}
+            onUpgrade={async (tier) => {
+              try {
+                console.log('Upgrading to:', tier);
+                await canisterService.upgradeUserTier(tier);
+                alert(`Successfully upgraded to ${tier} plan!`);
+                // Refetch user tier and update UI state
+                const userBalance = await canisterService.getUserBalance();
+                if (userBalance) {
+                  const frontendTier = mapBackendTierToFrontend(userBalance.currentTier);
+                  setCurrentTier(frontendTier);
+                }
+              } catch (error) {
+                console.error('Upgrade error:', error);
+                alert('Failed to upgrade plan. Please try again.');
+              }
+            }}
+            onDowngrade={async (tier) => {
+              try {
+                console.log('Downgrading to:', tier);
+                await canisterService.upgradeUserTier(tier);
+                alert(`Successfully downgraded to ${tier} plan!`);
+                // Refetch user tier and update UI state
+                const userBalance = await canisterService.getUserBalance();
+                if (userBalance) {
+                  const frontendTier = mapBackendTierToFrontend(userBalance.currentTier);
+                  setCurrentTier(frontendTier);
+                }
+              } catch (error) {
+                console.error('Downgrade error:', error);
+                alert('Failed to downgrade plan. Please try again.');
+              }
+            }}
+          />
         );
       
       default:
@@ -288,13 +313,17 @@ const Dashboard: React.FC<DashboardProps> = ({
       setError(null);
       
       try {
-        // Test canister connectivity first
-        const canisterAccess = await canisterService.testCanisterAccess();
-        console.log('Canister access test:', canisterAccess);
-
-        // Get user agents and calculate metrics from them
+        // Get user agents directly (bypassing readiness checks)
         const agents = await canisterService.getUserAgents();
-        console.log('Fetched agents:', agents);
+        console.log('Agents:', agents);
+        
+        // Get user balance and tier
+        const userBalance = await canisterService.getUserBalance();
+        if (userBalance) {
+          const frontendTier = mapBackendTierToFrontend(userBalance.currentTier);
+          setCurrentTier(frontendTier);
+          console.log('User tier:', userBalance.currentTier, 'mapped to frontend tier:', frontendTier);
+        }
         
         const activeAgents = agents.filter(agent => 'Active' in agent.status).length;
         
@@ -324,17 +353,13 @@ const Dashboard: React.FC<DashboardProps> = ({
           monthlyGrowth,
         };
 
-        // Get real system status from canisters
-        const systemStatusData = await canisterService.getSystemStatus();
-        console.log('System status data:', systemStatusData);
-
         // Sort agents by created date and take the most recent 5
         const sortedAgents = agents.sort((a, b) => Number(b.created) - Number(a.created));
         const recentAgentsList = sortedAgents.slice(0, 5);
 
         setMetrics(metrics);
         setRecentAgents(recentAgentsList);
-        setSystemStatus(systemStatusData);
+        setAllAgents(agents);
         setError(null);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -348,12 +373,6 @@ const Dashboard: React.FC<DashboardProps> = ({
           totalMessages: 0,
           monthlyGrowth: { agents: 0, conversations: 0, messages: 0 }
         });
-        setSystemStatus({
-          agentManager: 'Error',
-          llmProcessor: 'Error',
-          contextManager: 'Error',
-          productionAPIs: 'Error',
-        });
       } finally {
         setLoading(false);
       }
@@ -361,6 +380,58 @@ const Dashboard: React.FC<DashboardProps> = ({
 
     fetchDashboardData();
   }, [sessionToken]);
+
+  // Auto-select first available agent when navigating to chat view
+  useEffect(() => {
+    if (activeView === 'chat' && !selectedAgent && allAgents.length > 0) {
+      // Find the first active agent, or just the first agent if none are active
+      const activeAgent = allAgents.find(agent => 'Active' in agent.status);
+      const agentToSelect = activeAgent || allAgents[0];
+      
+      if (agentToSelect) {
+        // Convert AgentResponse to Agent format
+        const convertedAgent: Agent = {
+          id: agentToSelect.id,
+          name: agentToSelect.name,
+          description: agentToSelect.description,
+          status: 'Active' in agentToSelect.status ? 'Active' : 
+                 'Inactive' in agentToSelect.status ? 'Inactive' : 'Draft',
+          created: new Date(agentToSelect.created).toISOString(),
+          lastUpdated: new Date(agentToSelect.updated).toISOString(),
+          avatar: Array.isArray(agentToSelect.config.appearance.avatar) && agentToSelect.config.appearance.avatar.length > 0 
+            ? agentToSelect.config.appearance.avatar[0] 
+            : 'default',
+          config: {
+            personality: {
+              traits: agentToSelect.config.personality.traits,
+              tone: agentToSelect.config.personality.tone,
+              responseStyle: agentToSelect.config.personality.style,
+            },
+            knowledgeBase: {
+              documents: agentToSelect.config.knowledgeBase.map(kb => kb.content),
+              sources: [],
+              context: agentToSelect.config.knowledgeBase.map(kb => kb.content).join('\n')
+            },
+            behavior: {
+              maxResponseLength: 'Long' in agentToSelect.config.behavior.responseLength ? 500 : 200,
+              conversationMemory: true,
+              escalationRules: []
+            },
+            appearance: {
+              avatar: (Array.isArray(agentToSelect.config.appearance.avatar) && agentToSelect.config.appearance.avatar.length > 0 
+                ? agentToSelect.config.appearance.avatar[0] 
+                : 'default') || 'default',
+              theme: agentToSelect.config.appearance.primaryColor || '#3b82f6',
+              welcomeMessage: `Hello! I'm ${agentToSelect.name}. How can I help you today?`
+            }
+          }
+        };
+        
+        console.log('Auto-selecting agent for chat:', convertedAgent.name);
+        onSelectAgent(convertedAgent);
+      }
+    }
+  }, [activeView, selectedAgent, allAgents, onSelectAgent]);
 
   if (loading) {
     return (
@@ -370,7 +441,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           activeView={activeView}
           selectedAgent={selectedAgent}
         />
-        <div className="flex-1 flex flex-col ml-64">
+        <div className="flex-1 flex flex-col md:ml-64">
           <DashboardHeader 
             identity={identity}
             sessionToken={sessionToken}
@@ -379,7 +450,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             onSearchChange={handleSearchChange}
             notifications={notifications}
           />
-          <main className="flex-1 p-8">
+          <main className={`flex-1 ${activeView === 'chat' ? 'p-0' : 'p-4 md:p-8'}`}>
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               <span className="ml-3 text-gray-600 dark:text-gray-400">Loading dashboard...</span>
@@ -398,7 +469,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           activeView={activeView}
           selectedAgent={selectedAgent}
         />
-        <div className="flex-1 flex flex-col ml-64">
+        <div className="flex-1 flex flex-col md:ml-64">
           <DashboardHeader 
             identity={identity}
             sessionToken={sessionToken}
@@ -407,9 +478,9 @@ const Dashboard: React.FC<DashboardProps> = ({
             onSearchChange={handleSearchChange}
             notifications={notifications}
           />
-          <main className="flex-1 p-8">
+          <main className={`flex-1 ${activeView === 'chat' ? 'p-0' : 'p-4 md:p-8'}`}>
             <div className="flex items-center justify-center h-64">
-              <div className="text-center">
+              <div className="text-center px-4">
                 <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">Authentication Required</div>
                 <div className="text-gray-400 dark:text-gray-500 text-sm">Please log in with Internet Identity to access the dashboard.</div>
               </div>
@@ -427,7 +498,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         activeView={activeView}
         selectedAgent={selectedAgent}
       />
-      <div className="flex-1 flex flex-col ml-64">
+      <div className="flex-1 flex flex-col md:ml-64">
         <DashboardHeader 
           identity={identity}
           sessionToken={sessionToken}
@@ -436,7 +507,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           onSearchChange={handleSearchChange}
           notifications={notifications}
         />
-        <main className="flex-1 p-8">
+        <main className={`flex-1 ${activeView === 'chat' ? 'p-0' : 'p-4 md:p-8'}`}>
           {renderActiveView()}
         </main>
       </div>

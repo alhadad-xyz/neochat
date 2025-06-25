@@ -18,7 +18,6 @@ interface Transaction {
   agentId?: string;
   agentName?: string;
   operation?: string;
-  tokens?: number;
 }
 
 interface FilterOptions {
@@ -65,7 +64,6 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
         status: 'completed' as const,
         agentId: record.agentId,
         operation: record.operation,
-        tokens: record.tokens
       }));
       
       // Add mock payment transactions for demonstration
@@ -431,12 +429,6 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                       <span>{formatDate(transaction.timestamp)}</span>
                       <span>•</span>
                       <span>ID: {transaction.id}</span>
-                      {transaction.tokens && (
-                        <>
-                          <span>•</span>
-                          <span>{transaction.tokens.toLocaleString()} tokens</span>
-                        </>
-                      )}
                     </div>
                   </div>
                 </div>

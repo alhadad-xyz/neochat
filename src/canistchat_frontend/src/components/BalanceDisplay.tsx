@@ -55,15 +55,40 @@ const BalanceDisplay: React.FC = () => {
   const getTierLimits = (tier: string) => {
     switch (tier) {
       case 'Base':
-        return { monthlyLimit: 1000, pricePerMonth: 9.99, features: ['Basic chat', 'Email support', 'Standard AI models'] };
+        return { 
+          monthlyLimit: 1000, 
+          pricePerMonth: 9.99, 
+          costPerMessage: 0.01,
+          features: ['Basic chat', 'Email support', 'Standard AI models'] 
+        };
       case 'Standard':
-        return { monthlyLimit: 5000, pricePerMonth: 29.99, features: ['Advanced chat', 'Priority support', 'Premium AI models'] };
+        return { 
+          monthlyLimit: 5000, 
+          pricePerMonth: 29.99, 
+          costPerMessage: 0.008,
+          features: ['Advanced chat', 'Priority support', 'Premium AI models'] 
+        };
       case 'Professional':
-        return { monthlyLimit: 20000, pricePerMonth: 99.99, features: ['Professional chat', 'Dedicated support', 'All AI models'] };
+        return { 
+          monthlyLimit: 20000, 
+          pricePerMonth: 99.99, 
+          costPerMessage: 0.006,
+          features: ['Professional chat', 'Dedicated support', 'All AI models'] 
+        };
       case 'Enterprise':
-        return { monthlyLimit: 100000, pricePerMonth: 299.99, features: ['Enterprise chat', 'White-glove support', 'Custom AI models'] };
+        return { 
+          monthlyLimit: 100000, 
+          pricePerMonth: 299.99, 
+          costPerMessage: 0.004,
+          features: ['Enterprise chat', 'White-glove support', 'Custom AI models'] 
+        };
       default:
-        return { monthlyLimit: 1000, pricePerMonth: 9.99, features: ['Basic features'] };
+        return { 
+          monthlyLimit: 1000, 
+          pricePerMonth: 9.99, 
+          costPerMessage: 0.01,
+          features: ['Basic features'] 
+        };
     }
   };
 
@@ -85,6 +110,12 @@ const BalanceDisplay: React.FC = () => {
       style: 'currency',
       currency: 'USD',
     }).format(amount);
+  };
+
+  const calculateMonthlyUsageCost = () => {
+    if (!balance) return 0;
+    const tierLimits = getTierLimits(balance.currentTier);
+    return balance.monthlyUsage * tierLimits.costPerMessage;
   };
 
   if (loading) {
@@ -137,6 +168,7 @@ const BalanceDisplay: React.FC = () => {
   }
 
   const tierLimits = getTierLimits(balance.currentTier);
+  const monthlyUsageCost = calculateMonthlyUsageCost();
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
@@ -188,7 +220,7 @@ const BalanceDisplay: React.FC = () => {
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-gray-700">Monthly Usage</p>
           <p className="text-sm text-gray-500">
-            {balance.monthlyUsage.toLocaleString()} / {tierLimits.monthlyLimit.toLocaleString()} messages
+            {balance.monthlyUsage.toLocaleString()} messages • {formatCurrency(monthlyUsageCost)}
           </p>
         </div>
         
@@ -242,13 +274,21 @@ const BalanceDisplay: React.FC = () => {
               <span className="font-medium text-gray-700">Plan Price:</span>
               <span className="ml-2 text-gray-600">{formatCurrency(tierLimits.pricePerMonth)}/month</span>
             </div>
+            <div>
+              <span className="font-medium text-gray-700">Cost per Message:</span>
+              <span className="ml-2 text-gray-600">{formatCurrency(tierLimits.costPerMessage)}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">This Month:</span>
+              <span className="ml-2 text-gray-600">{formatCurrency(monthlyUsageCost)}</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Last Updated */}
       <div className="text-xs text-gray-500 border-t pt-3">
-        Last updated: {new Date(balance.lastUpdated).toLocaleString()}
+        Last updated: {new Date(Number(balance.lastUpdated) / 1000000).toLocaleString()}
       </div>
     </div>
   );

@@ -1,11 +1,11 @@
 /**
- * CanistChat SDK
+ * NeoChat SDK
  * 
  * A comprehensive SDK for integrating AI agents powered by Internet Computer
  * into web applications, mobile apps, and other platforms.
  * 
  * @version 1.0.0
- * @author CanistChat Team
+ * @author NeoChat Team
  */
 
 // Core SDK exports

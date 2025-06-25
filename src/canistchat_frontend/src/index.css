@@ -100,4 +100,42 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Fix input focus issues and prevent browser validation styling */
+  input:focus,
+  input:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  input:invalid {
+    box-shadow: none !important;
+  }
+
+  /* Ensure consistent input behavior */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  /* Chat input specific styling */
+  .chat-input {
+    outline: none !important;
+    box-shadow: none !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .chat-input:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgb(59 130 246) !important;
+    border-color: rgb(59 130 246) !important;
+  }
+
+  .chat-input:invalid {
+    box-shadow: none !important;
+    border-color: rgb(209 213 219) !important;
+  }
 }

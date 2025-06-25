@@ -1,19 +1,13 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, Activity, MessageSquare, FileText, TrendingUp, AlertCircle } from 'lucide-react';
+import { Users, Activity, MessageSquare, FileText, TrendingUp } from 'lucide-react';
 import { DashboardMetrics } from '../../services/canisterService';
 
 interface DashboardStatsProps {
   metrics: DashboardMetrics;
-  systemStatus: {
-    agentManager: string;
-    llmProcessor: string;
-    contextManager: string;
-    productionAPIs: string;
-  };
 }
 
-const DashboardStats: React.FC<DashboardStatsProps> = ({ metrics, systemStatus }) => {
+const DashboardStats: React.FC<DashboardStatsProps> = ({ metrics }) => {
   const formatNumber = (num: number): string => {
     if (num >= 1000) {
       return (num / 1000).toFixed(1) + 'K';
@@ -61,65 +55,30 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ metrics, systemStatus }
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <Card key={index} className={`${stat.bgColor} ${stat.borderColor} border backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:scale-105`}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-xl ${stat.bgColor} ${stat.borderColor} border`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
-                <div className="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-sm font-medium">{stat.change}</span>
-                </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      {stats.map((stat, index) => (
+        <Card key={index} className={`${stat.bgColor} ${stat.borderColor} border backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:scale-105`}>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`p-3 rounded-xl ${stat.bgColor} ${stat.borderColor} border`}>
+                <stat.icon className={`w-6 h-6 ${stat.color}`} />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  {stat.title}
-                </p>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stat.value}
-                </h3>
+              <div className="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm font-medium">{stat.change}</span>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* System Status */}
-      <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg border border-white/20 dark:border-gray-700/50 shadow-xl">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">System Status</h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex items-center">
-              <div className={`h-2 w-2 rounded-full animate-pulse mr-3 ${
-                systemStatus.agentManager === 'Operational' ? 'bg-green-500' : 'bg-red-500'
-              }`}></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Agent Manager: {systemStatus.agentManager}</span>
             </div>
-            <div className="flex items-center">
-              <div className={`h-2 w-2 rounded-full animate-pulse mr-3 ${
-                systemStatus.llmProcessor === 'Operational' ? 'bg-green-500' : 'bg-red-500'
-              }`}></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">LLM Processor: {systemStatus.llmProcessor}</span>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                {stat.title}
+              </p>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {stat.value}
+              </h3>
             </div>
-            <div className="flex items-center">
-              <div className={`h-2 w-2 rounded-full animate-pulse mr-3 ${
-                systemStatus.contextManager === 'Operational' ? 'bg-green-500' : 'bg-red-500'
-              }`}></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Context Manager: {systemStatus.contextManager}</span>
-            </div>
-            <div className="flex items-center">
-              <div className={`h-2 w-2 rounded-full animate-pulse mr-3 ${
-                systemStatus.productionAPIs === 'Ready' ? 'bg-green-500' : 'bg-yellow-500'
-              }`}></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Production APIs: {systemStatus.productionAPIs}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 /**
- * CanistChat SDK Type Definitions
+ * NeoChat SDK Type Definitions
  */
 
 // Core SDK types

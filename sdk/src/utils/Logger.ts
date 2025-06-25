@@ -104,7 +104,7 @@ export class Logger {
 
   private outputToConsole(entry: LogEntry): void {
     const timestamp = entry.timestamp.toISOString();
-    const prefix = `[${timestamp}] [${entry.level.toUpperCase()}] CanistChat SDK:`;
+    const prefix = `[${timestamp}] [${entry.level.toUpperCase()}] NeoChat SDK:`;
     
     switch (entry.level) {
       case 'debug':

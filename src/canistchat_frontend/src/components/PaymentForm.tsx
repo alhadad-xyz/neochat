@@ -184,14 +184,17 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     if (!validateStep()) return;
     
     setIsProcessing(true);
+    setErrors({});
+    
     try {
       const amount = parseFloat(paymentData.amount);
       
       // Simulate payment processing (replace with actual payment integration)
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Add balance to user account
-      await canisterService.addBalance(amount);
+      // In the subscription model, payments are handled through subscription upgrades
+      // This form is now for subscription payments rather than balance top-ups
+      console.log('Payment processed for subscription:', amount);
       
       onSuccess?.(amount);
       
@@ -469,7 +472,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           </div>
           <div className="ml-3">
             <h4 className="text-sm font-medium text-blue-800">Secure Payment</h4>
-            <p className="text-sm text-blue-700">Your payment information is encrypted and secure. This transaction will add ${paymentData.amount} to your CanistChat balance.</p>
+            <p className="text-sm text-blue-700">Your payment information is encrypted and secure. This transaction will add ${paymentData.amount} to your NeoChat balance.</p>
           </div>
         </div>
       </div>

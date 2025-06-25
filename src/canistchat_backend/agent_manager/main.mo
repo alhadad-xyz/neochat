@@ -1,3 +1,23 @@
+/**
+ * @fileoverview NeoChat Agent Manager Canister
+ * 
+ * This canister manages the creation, storage, and retrieval of AI agents
+ * for the NeoChat platform. It provides a comprehensive API for agent
+ * lifecycle management, including creation, updates, deletion, and analytics.
+ * 
+ * Features:
+ * - Agent creation and configuration management
+ * - Agent status tracking and updates
+ * - User agent ownership and permissions
+ * - Agent analytics and usage tracking
+ * - Public agent discovery and access
+ * - Agent versioning and history
+ * 
+ * @author NeoChat Development Team
+ * @version 2.0.0
+ * @since 1.0.0
+ */
+
 import HashMap "mo:base/HashMap";
 import Result "mo:base/Result";
 import Time "mo:base/Time";
@@ -203,7 +223,7 @@ actor AgentManager {
     private var configVersions = HashMap.HashMap<AgentId, [AgentConfig]>(50, Text.equal, Text.hash);
     
     // Inter-canister communication actor references
-    private let llmProcessor = actor("bkyz2-fmaaa-aaaaa-qaaaq-cai") : actor {
+    private let llmProcessor = actor("g26ho-daaaa-aaaab-aag2a-cai") : actor {
         processMessage: ({
             agentId: Text;
             conversationId: Text;
@@ -251,7 +271,7 @@ actor AgentManager {
         };
     };
 
-    private let metricsCollector = actor("ucwa4-rx777-77774-qaada-cai") : actor {
+    private let metricsCollector = actor("b77ix-eeaaa-aaaaa-qaada-cai") : actor {
         chargeUser: (Text, Text, Nat) -> async Result.Result<(), Text>;
         getUserBalance: (Text) -> async ?Nat;
         getUserTier: (Text) -> async Text;
@@ -263,7 +283,7 @@ actor AgentManager {
         };
     };
 
-    private let authProxy = actor("u6s2n-gx777-77774-qaaba-cai") : actor {
+    private let authProxy = actor("bd3sg-teaaa-aaaaa-qaaba-cai") : actor {
         validateSession: (Text) -> async Result.Result<Text, Text>;
         createSession: (Text) -> async Result.Result<Text, Text>;
         healthCheck: () -> async {
@@ -272,7 +292,7 @@ actor AgentManager {
         };
     };
 
-    private let dataStorage = actor("umunu-kh777-77774-qaaca-cai") : actor {
+    private let dataStorage = actor("br5f7-7uaaa-aaaaa-qaaca-cai") : actor {
         createConversation: (Text, Text, Text) -> async Result.Result<Text, Text>;
         addMessage: (Text, Text, Text, Text) -> async Result.Result<(), Text>;
         healthCheck: () -> async {
@@ -417,7 +437,32 @@ actor AgentManager {
         score / maxScore
     };
     
-    // Enhanced Public API functions
+    // ============================================================================
+    // PUBLIC API FUNCTIONS
+    // ============================================================================
+
+    /**
+     * Creates a new agent with advanced configuration and validation
+     * 
+     * This function creates a new AI agent with comprehensive configuration
+     * including personality, behavior, knowledge base, and integration settings.
+     * The configuration is validated before creation to ensure quality.
+     * 
+     * @param request - The agent creation request containing all configuration
+     * @returns Result containing the new agent ID or validation error
+     * 
+     * @example
+     * ```motoko
+     * let result = await createAgentAdvanced({
+     *   name = "Customer Support Bot";
+     *   description = "AI assistant for customer support";
+     *   category = "Support";
+     *   tags = ["support", "customer-service"];
+     *   config = agentConfig;
+     *   isPublic = true;
+     * });
+     * ```
+     */
     public shared(msg) func createAgentAdvanced(request: CreateAgentRequest): async Result.Result<AgentId, Error> {
         let caller = msg.caller;
         
@@ -468,7 +513,31 @@ actor AgentManager {
         
         #ok(agentId)
     };
-    
+
+    /**
+     * Validates agent configuration for quality and completeness
+     * 
+     * Performs comprehensive validation of agent configuration including
+     * personality settings, behavior parameters, knowledge base, and
+     * integration settings. Returns detailed feedback with errors,
+     * warnings, and a quality score.
+     * 
+     * @param config - The agent configuration to validate
+     * @returns Validation result with errors, warnings, and quality score
+     * 
+     * @example
+     * ```motoko
+     * let validation = await validateAgentConfiguration(agentConfig);
+     * if (validation.isValid) {
+     *   // Configuration is valid
+     * } else {
+     *   // Handle validation errors
+     *   for (error in validation.errors.vals()) {
+     *     // Process each error
+     *   };
+     * };
+     * ```
+     */
     public func validateAgentConfiguration(config: AgentConfig): async ValidationResult {
         var allErrors: [Text] = [];
         var allWarnings: [Text] = [];
@@ -507,8 +576,34 @@ actor AgentManager {
             score = score;
         }
     };
-    
-    // Context Management Functions
+
+    // ============================================================================
+    // CONTEXT MANAGEMENT FUNCTIONS
+    // ============================================================================
+
+    /**
+     * Creates a new conversation context for an agent
+     * 
+     * Creates a conversation context that maintains chat history and
+     * conversation state for a specific user-agent interaction.
+     * The context is used to provide continuity in conversations.
+     * 
+     * @param agentId - The ID of the agent to create context for
+     * @returns Result containing the new context ID or error
+     * 
+     * @example
+     * ```motoko
+     * let contextResult = await createConversationContext("agent_123");
+     * switch (contextResult) {
+     *   case (#ok(contextId)) {
+     *     // Use contextId for conversation
+     *   };
+     *   case (#err(error)) {
+     *     // Handle error
+     *   };
+     * };
+     * ```
+     */
     public shared(msg) func createConversationContext(agentId: AgentId): async Result.Result<ContextId, Error> {
         let caller = msg.caller;
         
@@ -540,7 +635,28 @@ actor AgentManager {
             };
         }
     };
-    
+
+    /**
+     * Adds a message to a conversation context
+     * 
+     * Adds a new message to the conversation context, maintaining
+     * the conversation history. The context is automatically trimmed
+     * if it exceeds the maximum size limit.
+     * 
+     * @param contextId - The context ID to add the message to
+     * @param role - The role of the message sender (User, Assistant, System)
+     * @param content - The message content
+     * @returns Result indicating success or error
+     * 
+     * @example
+     * ```motoko
+     * let result = await addContextMessage(
+     *   contextId,
+     *   #User,
+     *   "Hello, how can you help me?"
+     * );
+     * ```
+     */
     public shared(msg) func addContextMessage(
         contextId: ContextId, 
         role: {#User; #Assistant; #System}, 
@@ -735,6 +851,36 @@ actor AgentManager {
         }
     };
 
+    // Get conversation history for an agent (for analytics and review)
+    public query func getAgentConversationHistory(agentId: AgentId, limit: ?Nat): async Result.Result<[{
+        contextId: ContextId;
+        messageCount: Nat;
+        created: Int;
+        lastAccessed: Int;
+    }], Error> {
+        let maxResults = Option.get(limit, 10);
+        let agentContexts = Buffer.Buffer<{
+            contextId: ContextId;
+            messageCount: Nat;
+            created: Int;
+            lastAccessed: Int;
+        }>(0);
+        
+        // Find all contexts for this agent
+        for ((contextId, context) in contexts.entries()) {
+            if (context.agentId == agentId and agentContexts.size() < maxResults) {
+                agentContexts.add({
+                    contextId = contextId;
+                    messageCount = context.messages.size();
+                    created = context.created;
+                    lastAccessed = context.lastAccessed;
+                });
+            };
+        };
+        
+        #ok(Buffer.toArray(agentContexts))
+    };
+
     // Public API functions
     public shared(msg) func createAgent(request: CreateAgentRequest): async Result.Result<AgentId, Error> {
         let caller = msg.caller;
@@ -896,6 +1042,165 @@ actor AgentManager {
         addToUserAgents(caller, agentId);
         
         #ok(agentId)
+    };
+
+    // Public chat processing for embed widgets and public access
+    // This method allows anonymous users to chat with public agents
+    public func processAgentChatPublic(
+        agentId: AgentId,
+        userMessage: Text
+    ) : async Result.Result<{
+        response: Text;
+        confidence: Float;
+        tokensUsed: Nat;
+        contextId: ContextId;
+        processingTime: Nat;
+    }, Error> {
+        let startTime = Time.now();
+        
+        // Get agent without authentication check
+        switch (agents.get(agentId)) {
+            case (null) { return #err(#NotFound); };
+            case (?agent) {
+                // Check if agent is public and active
+                if (not agent.permissions.isPublic) {
+                    return #err(#Unauthorized);
+                };
+                
+                // Check if agent is active - if not, return a friendly response
+                switch (agent.status) {
+                    case (#Active) { /* Agent is active, continue */ };
+                    case (#Inactive) { 
+                        return #ok({
+                            response = "Hi there! I'm " # agent.name # " 👋 I'm currently taking a break and not available for conversations right now. Please try again later! 😊";
+                            confidence = 1.0;
+                            tokensUsed = 25;
+                            contextId = generateContextId();
+                            processingTime = 100;
+                        });
+                    };
+                    case (#Suspended) { 
+                        return #ok({
+                            response = "Hello! I'm " # agent.name # " 🤖 I'm currently suspended and unable to respond to messages. Please contact my administrator for assistance. Thank you for your understanding! 🙏";
+                            confidence = 1.0;
+                            tokensUsed = 30;
+                            contextId = generateContextId();
+                            processingTime = 100;
+                        });
+                    };
+                    case (#Archived) { 
+                        return #ok({
+                            response = "Greetings! I'm " # agent.name # " 📚 I've been archived and am no longer actively responding to conversations. If you need assistance, please check with my creator about reactivating me or using a different agent. Take care! 👋";
+                            confidence = 1.0;
+                            tokensUsed = 35;
+                            contextId = generateContextId();
+                            processingTime = 100;
+                        });
+                    };
+                };
+                
+                // For public access, create a temporary context (no persistence for anonymous users)
+                let publicContextId = generateContextId();
+                
+                // Build basic prompt with agent personality (simplified for public access)
+                let prompt = buildPublicPrompt(agent, userMessage);
+                
+                // Process with LLM
+                try {
+                    let llmResponse = await llmProcessor.processMessage({
+                        agentId = agentId;
+                        conversationId = publicContextId;
+                        userMessage = prompt;
+                        agentPersonality = null;
+                        systemPrompt = null;
+                        context = null;
+                        temperature = ?agent.config.behavior.temperature;
+                        maxTokens = null;
+                        routingStrategy = null;
+                        enableStreaming = null;
+                    });
+                    switch (llmResponse) {
+                        case (#ok(response)) {
+                            // Update agent analytics (without user-specific tracking)
+                            ignore updateAgentAnalytics(agentId, 0, 2, response.tokens);
+                            
+                            let processingTime = Int.abs(Time.now() - startTime) / 1_000_000; // milliseconds
+                            
+                            #ok({
+                                response = response.agentResponse;
+                                confidence = response.confidence;
+                                tokensUsed = response.tokens;
+                                contextId = publicContextId;
+                                processingTime = processingTime;
+                            })
+                        };
+                        case (#err(error)) {
+                            // Fallback to a basic response if LLM fails
+                            let fallbackResponse = "Hello! I'm " # agent.name # ". " # agent.description # " I received your message: \"" # userMessage # "\". I'm here to help! (Note: I'm currently running in demonstration mode)";
+                            
+                            let processingTime = Int.abs(Time.now() - startTime) / 1_000_000;
+                            
+                            #ok({
+                                response = fallbackResponse;
+                                confidence = 0.8;
+                                tokensUsed = estimateTokens(fallbackResponse);
+                                contextId = publicContextId;
+                                processingTime = processingTime;
+                            })
+                        };
+                    }
+                } catch (_e) {
+                    // Fallback response for any errors
+                    let fallbackResponse = "Hello! I'm " # agent.name # ". Thanks for your message: \"" # userMessage # "\". I'm experiencing some technical difficulties right now, but I'm here to help! Please try again in a moment.";
+                    
+                    let processingTime = Int.abs(Time.now() - startTime) / 1_000_000;
+                    
+                    #ok({
+                        response = fallbackResponse;
+                        confidence = 0.5;
+                        tokensUsed = estimateTokens(fallbackResponse);
+                        contextId = publicContextId;
+                        processingTime = processingTime;
+                    })
+                }
+            };
+        }
+    };
+    
+    // Build a simplified prompt for public access
+    private func buildPublicPrompt(agent: Agent, userMessage: Text): Text {
+        let prompt = Buffer.Buffer<Text>(0);
+        
+        // Basic system prompt with agent personality
+        prompt.add("You are " # agent.name # ", " # agent.description # "\n");
+        prompt.add("Personality: " # agent.config.personality.tone # " and " # agent.config.personality.style # "\n");
+        prompt.add("Traits: " # Text.join(", ", agent.config.personality.traits.vals()) # "\n");
+        
+        // Add response style
+        prompt.add("Response style: " # (switch (agent.config.behavior.responseLength) {
+            case (#Short) { "concise" };
+            case (#Medium) { "moderate" };
+            case (#Long) { "detailed" };
+            case (#Variable) { "adaptive" };
+        }) # "\n\n");
+        
+        // Add knowledge base context if available (limited for public access)
+        if (agent.config.knowledgeBase.size() > 0) {
+            prompt.add("Relevant knowledge:\n");
+            var count = 0;
+            for (source in agent.config.knowledgeBase.vals()) {
+                if (source.isActive and count < 3) { // Limit to 3 sources for public access
+                    prompt.add("- " # source.content # "\n");
+                    count += 1;
+                };
+            };
+            prompt.add("\n");
+        };
+        
+        prompt.add("User message: " # userMessage # "\n");
+        prompt.add("Respond as " # agent.name # " with the specified personality:");
+        
+        Text.join("", prompt.vals())
     };
 
     // Enhanced chat processing with end-to-end integration
@@ -1137,6 +1442,8 @@ actor AgentManager {
                             compressionEnabled = agent.config.contextSettings.enableMemory;
                         };
                         contexts.put(useContextId, newContext);
+                        // Increment conversation count for new contexts
+                        ignore updateAgentAnalytics(agentId, 1, 0, 0);
                         newContext
                     };
                 };
@@ -1197,7 +1504,7 @@ actor AgentManager {
                             };
                             contexts.put(useContextId, updatedContext);
                             
-                            // Update agent analytics
+                            // Update agent analytics - count both user message and agent response
                             ignore updateAgentAnalytics(agentId, 0, 2, response.tokens);
                             
                             let processingTime = Int.abs(Time.now() - startTime) / 1_000_000; // milliseconds
