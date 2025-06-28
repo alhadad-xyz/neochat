@@ -60,23 +60,23 @@ export const PaymentManagement: React.FC<PaymentManagementProps> = ({
     fetchUserTier();
   }, []);
 
+  /**
+   * Loads billing data including subscription, usage history, and agents
+   * Fetches and processes user billing information on component mount
+   */
   useEffect(() => {
     const fetchAll = async () => {
-      setLoading(true);
-      setError(null);
       try {
+        setLoading(true);
         const [sub, usage, agentList] = await Promise.all([
           canisterService.getUserSubscription(),
-          canisterService.getUsageHistory(1000),
+          canisterService.getUsageHistory(50),
           canisterService.getUserAgents()
         ]);
+        
         setSubscription(sub);
         setUsageHistory(usage);
         setAgents(agentList);
-        // Debug logs
-        console.log('DEBUG: Subscription from canisterService:', sub);
-        console.log('DEBUG: UsageHistory from canisterService:', usage);
-        console.log('DEBUG: Agents from canisterService:', agentList);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load billing data');
         console.error('DEBUG: Error fetching billing data:', err);
@@ -87,7 +87,7 @@ export const PaymentManagement: React.FC<PaymentManagementProps> = ({
     fetchAll();
   }, []);
 
-  // Helper calculations
+  // Helper calculations for billing metrics
   const messagesThisMonth = usageHistory.filter(u => {
     if (!subscription) return false;
     const now = new Date();
@@ -112,26 +112,36 @@ export const PaymentManagement: React.FC<PaymentManagementProps> = ({
   const totalSpent = usageHistory.reduce((sum, u) => sum + (u.cost || 0), 0);
   const avgPerMessage = messagesThisMonth > 0 ? (totalSpent / messagesThisMonth) : 0;
   const activeAgents = agents.length;
-  console.log('Agents Billing:', agents);
 
+  /**
+   * Handles successful payment processing
+   * @param amount - Payment amount processed
+   */
   const handlePaymentSuccess = (amount: number) => {
-    console.log(`Payment successful: $${amount}`);
     setShowPaymentModal(false);
     // Refresh balance display
     window.location.reload();
   };
 
+  /**
+   * Handles payment processing errors
+   * @param error - Error message from payment processing
+   */
   const handlePaymentError = (error: string) => {
     console.error('Payment error:', error);
     alert(`Payment failed: ${error}`);
   };
 
+  /**
+   * Handles tier upgrade requests
+   * Processes subscription tier changes and updates user balance
+   * @param tier - Target subscription tier
+   */
   const handleTierUpgrade = async (tier: string) => {
     try {
       setLoading(true);
-      console.log('Upgrading to:', tier);
       await canisterService.upgradeUserTier(tier);
-      console.log('Upgrade call completed');
+      
       // Refetch user balance/tier
       const userBalance = await canisterService.getUserBalance();
       if (userBalance) {
@@ -148,8 +158,11 @@ export const PaymentManagement: React.FC<PaymentManagementProps> = ({
     }
   };
 
+  /**
+   * Handles tier downgrade requests
+   * @param tier - Target subscription tier for downgrade
+   */
   const handleTierDowngrade = (tier: string) => {
-    console.log(`Downgrading to tier: ${tier}`);
     setCurrentTier(tier as typeof currentTier);
     setShowPricingModal(false);
     alert(`Successfully changed to ${tier} plan!`);
@@ -233,7 +246,6 @@ export const PaymentManagement: React.FC<PaymentManagementProps> = ({
           <TransactionHistory
             showFilters={true}
             onTransactionClick={(transaction) => {
-              console.log('Transaction clicked:', transaction);
               alert(`Transaction details: ${JSON.stringify(transaction, null, 2)}`);
             }}
           />

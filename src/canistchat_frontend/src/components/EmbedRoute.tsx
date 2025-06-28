@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Agent, Message } from '../types';
 import { canisterService } from '../services/canisterService';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { Avatar } from '@/components/ui/avatar';
 
 interface DebugInfo {
   stage?: string;
@@ -30,23 +31,64 @@ const EmbedChatInterface: React.FC<EmbedChatInterfaceProps> = ({ agent, sessionT
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages are added
+  /**
+   * Saves conversation history to localStorage for session persistence
+   * Uses a combination of agent ID and session token as the storage key
+   */
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Add welcome message when agent loads
-  useEffect(() => {
-    if (agent && agent.config.appearance.welcomeMessage) {
-      const welcomeMessage: Message = {
-        id: `welcome_${Date.now()}`,
-        content: agent.config.appearance.welcomeMessage,
-        sender: 'agent',
-        timestamp: new Date()
-      };
-      setMessages([welcomeMessage]);
+    if (messages.length > 0 && sessionToken && agent?.id) {
+      try {
+        const historyKey = `canistchat_history_${agent.id}_${sessionToken}`;
+        localStorage.setItem(historyKey, JSON.stringify(messages));
+      } catch (error) {
+        console.error('💬 Session Debug - Error saving conversation history:', error);
+      }
     }
-  }, [agent]);
+  }, [messages, sessionToken, agent?.id]);
+
+  /**
+   * Loads conversation history and adds welcome message when agent loads
+   * Prioritizes saved conversation history over welcome message
+   */
+  useEffect(() => {
+    const loadConversationHistory = async () => {
+      if (sessionToken) {
+        try {
+          // Try to load conversation history from localStorage
+          const historyKey = `canistchat_history_${agent.id}_${sessionToken}`;
+          const savedHistory = localStorage.getItem(historyKey);
+          
+          if (savedHistory) {
+            const parsedHistory = JSON.parse(savedHistory);
+            // Convert timestamp strings back to Date objects
+            const convertedHistory = parsedHistory.map((msg: any) => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            }));
+            setMessages(convertedHistory);
+            return; // Skip welcome message if we have history
+          }
+        } catch (error) {
+          console.error('💬 Session Debug - Error loading conversation history:', error);
+        }
+      }
+
+      // Add welcome message only if no history was loaded
+      if (agent && agent.config.appearance.welcomeMessage) {
+        const welcomeMessage: Message = {
+          id: `welcome_${Date.now()}`,
+          content: agent.config.appearance.welcomeMessage,
+          sender: 'agent',
+          timestamp: new Date()
+        };
+        setMessages([welcomeMessage]);
+      }
+    };
+
+    if (agent) {
+      loadConversationHistory();
+    }
+  }, [agent, sessionToken]);
 
   // Focus input on mount
   useEffect(() => {
@@ -55,6 +97,11 @@ const EmbedChatInterface: React.FC<EmbedChatInterfaceProps> = ({ agent, sessionT
     }
   }, []);
 
+  /**
+   * Handles sending messages to the agent
+   * Uses public chat processing for embed widgets
+   * @param messageContent - The message content to send
+   */
   const handleSendMessage = async (messageContent: string) => {
     if (!messageContent.trim()) return;
 
@@ -119,9 +166,12 @@ const EmbedChatInterface: React.FC<EmbedChatInterfaceProps> = ({ agent, sessionT
       {/* Chat Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white font-medium">
-            {agent.config.appearance.avatar || agent.name.charAt(0).toUpperCase()}
-          </div>
+          <Avatar
+            src={agent.config?.appearance?.avatar}
+            fallback={agent.name?.charAt(0).toUpperCase() || 'A'}
+            alt={`${agent.name} avatar`}
+            size="md"
+          />
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               {agent.name}
@@ -144,9 +194,13 @@ const EmbedChatInterface: React.FC<EmbedChatInterfaceProps> = ({ agent, sessionT
               msg.sender === 'agent' ? 'flex-row' : 'flex-row-reverse space-x-reverse'
             }`}>
               {msg.sender === 'agent' && (
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                  {agent.config.appearance.avatar || agent.name.charAt(0).toUpperCase()}
-                </div>
+                <Avatar
+                  src={agent.config?.appearance?.avatar}
+                  fallback={agent.name?.charAt(0).toUpperCase() || 'A'}
+                  alt={`${agent.name} avatar`}
+                  size="sm"
+                  className="flex-shrink-0"
+                />
               )}
               <div className={`rounded-lg px-4 py-2 ${
                 msg.sender === 'agent'
@@ -166,9 +220,13 @@ const EmbedChatInterface: React.FC<EmbedChatInterfaceProps> = ({ agent, sessionT
         {isLoading && (
           <div className="flex justify-start">
             <div className="flex items-start space-x-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                {agent.config.appearance.avatar || agent.name.charAt(0).toUpperCase()}
-              </div>
+              <Avatar
+                src={agent.config?.appearance?.avatar}
+                fallback={agent.name?.charAt(0).toUpperCase() || 'A'}
+                alt={`${agent.name} avatar`}
+                size="sm"
+                className="flex-shrink-0"
+              />
               <div className="bg-white dark:bg-gray-800 rounded-lg px-4 py-2 shadow-sm">
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
@@ -212,181 +270,149 @@ const EmbedRoute: React.FC = () => {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<DebugInfo>({});
 
-  // Get URL parameters manually and add debugging
-  const urlParams = new URLSearchParams(window.location.search);
-  const agentId = urlParams.get('agent');
-  const theme = urlParams.get('theme') || 'light';
-  const primaryColor = decodeURIComponent(urlParams.get('color') || '#4F46E5');
-  const welcomeMessage = decodeURIComponent(urlParams.get('welcome') || '');
-  const placeholder = decodeURIComponent(urlParams.get('placeholder') || 'Type your message...');
-
-  // Debug logging for URL parameters
-  console.log('Embed Route Debug - URL Parameters:', {
-    fullUrl: window.location.href,
-    agentId,
-    theme,
-    primaryColor,
-    welcomeMessage,
-    placeholder
-  });
-
+  /**
+   * Extracts and validates URL parameters for agent ID and session
+   * Generates session token if not provided
+   */
   useEffect(() => {
-    const loadAgent = async () => {
-      setDebugInfo(prev => ({ ...prev, stage: 'Starting agent load' }));
-      
-      if (!agentId) {
-        console.error('Embed Route Debug - No agent ID in URL parameters');
-        setError('No agent ID provided');
-        setDebugInfo(prev => ({ ...prev, error: 'No agent ID in URL' }));
-        setLoading(false);
-        return;
-      }
+    const urlParams = new URLSearchParams(window.location.search);
+    const agentId = urlParams.get('agentId');
+    const sessionId = urlParams.get('sessionId');
+    const debugMode = urlParams.get('debug') === 'true';
+    const testMode = urlParams.get('test') === 'true';
 
+    // Set session token
+    setSessionToken(sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+
+    if (!agentId) {
+      setError('No agent ID provided');
+      setLoading(false);
+      return;
+    }
+
+    /**
+     * Loads agent data from canister service
+     * Handles both production and test scenarios
+     */
+    const loadAgent = async () => {
       try {
-        // Wait for canister service to be ready
-        console.log('Embed Route Debug - Initializing canister service...');
-        setDebugInfo(prev => ({ ...prev, stage: 'Initializing canister service' }));
+        setLoading(true);
+        setError(null);
         
-        await canisterService.waitForReady();
-        console.log('Embed Route Debug - Canister service ready, loading agent:', agentId);
-        setDebugInfo(prev => ({ ...prev, stage: 'Canister service ready' }));
-        
-        // Log the canister service state
-        console.log('Embed Route Debug - Canister Service State:', {
-          isReady: canisterService.isReady,
-          timestamp: new Date().toISOString()
+                 // Initialize canister service if needed
+         if (!canisterService.isReady()) {
+           await canisterService.waitForReady();
+         }
+
+        let loadedAgent: Agent;
+
+        try {
+          // Try to load the agent from the canister
+          const agentResponse = await canisterService.getAgentPublic(agentId);
+          
+                     // Convert AgentResponse to Agent format
+           const statusString = 'Active' in agentResponse.status ? 'Active' :
+                               'Inactive' in agentResponse.status ? 'Inactive' : 'Draft';
+           
+           loadedAgent = {
+             id: agentResponse.id,
+             name: agentResponse.name,
+             description: agentResponse.description,
+             status: statusString,
+             created: agentResponse.created.toString(),
+            avatar: agentResponse.config.appearance.avatar?.[0],
+            config: {
+              personality: {
+                traits: agentResponse.config.personality.traits,
+                tone: agentResponse.config.personality.tone,
+                responseStyle: agentResponse.config.personality.style
+              },
+              knowledgeBase: {
+                documents: [],
+                sources: agentResponse.config.knowledgeBase.map(kb => ({
+                  type: Object.keys(kb.sourceType)[0] as any,
+                  content: kb.content,
+                  metadata: Object.fromEntries(kb.metadata)
+                })),
+                context: agentResponse.config.knowledgeBase[0]?.content || ''
+              },
+              behavior: {
+                maxResponseLength: 500, // Default value
+                conversationMemory: agentResponse.config.contextSettings.enableMemory,
+                escalationRules: []
+              },
+              appearance: {
+                avatar: agentResponse.config.appearance.avatar?.[0],
+                theme: 'default',
+                welcomeMessage: 'Hello! How can I help you today?'
+              }
+            }
+          };
+          
+        } catch (err) {
+          console.error('💬 Session Debug - Failed to load agent:', err);
+          
+          // Fallback: Create a demo agent for testing
+          if (testMode) {
+            loadedAgent = {
+              id: agentId,
+              name: 'Demo Agent',
+              description: 'A demonstration agent for testing purposes',
+              status: { 'Active': null } as any,
+              created: Date.now().toString(),
+              avatar: undefined,
+              config: {
+                personality: {
+                  traits: ['helpful', 'friendly'],
+                  tone: 'professional',
+                  responseStyle: 'conversational'
+                },
+                knowledgeBase: {
+                  documents: [],
+                  sources: [],
+                  context: 'I am a demo agent created for testing the embed functionality.'
+                },
+                behavior: {
+                  maxResponseLength: 500,
+                  conversationMemory: true,
+                  escalationRules: []
+                },
+                appearance: {
+                  avatar: undefined,
+                  theme: 'default',
+                  welcomeMessage: 'Hello! I\'m a demo agent. How can I help you today?'
+                }
+              }
+            };
+          } else {
+            throw err;
+          }
+        }
+
+        setAgent(loadedAgent);
+        setDebugInfo({
+          stage: 'agent_loaded',
+          convertedAgent: loadedAgent
         });
 
-        // Use the public method that doesn't require authentication
-        console.log('Embed Route Debug - Attempting to load agent:', agentId);
-        setDebugInfo(prev => ({ ...prev, stage: 'Loading agent' }));
-        
-        const agentResponse = await canisterService.getAgentPublic(agentId);
-        console.log('Embed Route Debug - Agent Response:', agentResponse);
-        setDebugInfo(prev => ({ 
-          ...prev, 
-          stage: 'Agent loaded',
-          agentResponse: agentResponse 
-        }));
-
-        // Convert canister response to frontend Agent type
-        const convertedAgent: Agent = {
-          id: agentResponse.id,
-          name: agentResponse.name,
-          description: agentResponse.description,
-          status: 'Active' in agentResponse.status ? 'Active' : 
-                 'Inactive' in agentResponse.status ? 'Inactive' : 'Draft',
-          created: new Date(Number(agentResponse.created)).toISOString(), // Ensure proper number conversion
-          lastUpdated: new Date().toISOString(),
-          avatar: Array.isArray(agentResponse.config.appearance.avatar) && agentResponse.config.appearance.avatar.length > 0 
-            ? agentResponse.config.appearance.avatar[0] 
-            : '',
-          config: {
-            personality: {
-              traits: agentResponse.config.personality.traits,
-              tone: agentResponse.config.personality.tone,
-              responseStyle: agentResponse.config.personality.style,
-            },
-            knowledgeBase: {
-              documents: agentResponse.config.knowledgeBase.map(kb => kb.content),
-              sources: [],
-              context: agentResponse.config.knowledgeBase.map(kb => kb.content).join('\n')
-            },
-            behavior: {
-              maxResponseLength: 'Long' in agentResponse.config.behavior.responseLength ? 500 : 200,
-              conversationMemory: true,
-              escalationRules: []
-            },
-            appearance: {
-              avatar: (Array.isArray(agentResponse.config.appearance.avatar) && agentResponse.config.appearance.avatar.length > 0 
-                ? agentResponse.config.appearance.avatar[0] 
-                : '') || '',
-              theme: theme || agentResponse.config.appearance.primaryColor || '#3b82f6',
-              welcomeMessage: welcomeMessage || `Hello! I'm ${agentResponse.name}. How can I help you today?`
-            }
-          }
-        };
-        
-        console.log('Embed Route Debug - Converted Agent:', convertedAgent);
-        setDebugInfo(prev => ({ 
-          ...prev, 
-          stage: 'Agent converted',
-          convertedAgent: convertedAgent 
-        }));
-        
-        setAgent(convertedAgent);
-      } catch (err) {
-        console.error('Embed Route Debug - Failed to load agent:', err);
-        setDebugInfo(prev => ({ 
-          ...prev, 
-          stage: 'Error',
-          error: err instanceof Error ? err.message : 'Unknown error',
-          fullError: err
-        }));
-
-        // Enhanced error handling
-        let errorMessage = 'Failed to load agent. ';
-        if (err instanceof Error) {
-          errorMessage += err.message;
-          // Check for specific error types
-          if (err.message.includes('not found') || err.message.includes('no such agent')) {
-            errorMessage = `Agent "${agentId}" not found. Please verify the agent ID.`;
-          } else if (err.message.includes('unauthorized') || err.message.includes('permission')) {
-            errorMessage = 'Access denied. Please check your permissions.';
-          } else if (err.message.includes('network') || err.message.includes('connection')) {
-            errorMessage = 'Network error. Please check your internet connection.';
-          }
-        } else {
-          errorMessage += 'An unexpected error occurred.';
-        }
-        
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load agent';
         setError(errorMessage);
-        
-        // Create a demo agent for testing purposes
-        console.log('Embed Route Debug - Creating demo agent for testing...');
-        const demoAgent: Agent = {
-          id: agentId || 'demo',
-          name: `Demo Agent (${agentId || 'demo'})`,
-          description: 'This is a demo agent for testing embed widgets',
-          status: 'Active',
-          created: new Date().toISOString(),
-          lastUpdated: new Date().toISOString(),
-          avatar: '',
-          config: {
-            personality: {
-              traits: ['helpful', 'friendly', 'knowledgeable'],
-              tone: 'professional',
-              responseStyle: 'conversational',
-            },
-            knowledgeBase: {
-              documents: ['Demo knowledge base for testing'],
-              sources: [],
-              context: 'This is a demo agent created for testing embed widgets when real agents are not available.'
-            },
-            behavior: {
-              maxResponseLength: 300,
-              conversationMemory: true,
-              escalationRules: []
-            },
-            appearance: {
-              avatar: '',
-              theme: theme || '#3b82f6',
-              welcomeMessage: welcomeMessage || `Hello! I'm ${agentId || 'Demo Agent'}. This is a demo mode for testing embed widgets.`
-            }
-          }
-        };
-        
-        setAgent(demoAgent);
-        setError('Demo mode: Real agent not available. Showing demo functionality.');
+        setDebugInfo({
+          stage: 'error',
+          error: errorMessage,
+          fullError: error
+        });
       } finally {
         setLoading(false);
       }
     };
 
     loadAgent();
-  }, [agentId, welcomeMessage]);
+  }, []);
 
   // Add debug panel in development mode
   const renderDebugPanel = () => {
@@ -417,9 +443,9 @@ const EmbedRoute: React.FC = () => {
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
-      :root {
-        --primary-color: ${primaryColor};
-      }
+              :root {
+         --primary-color: #4F46E5;
+        }
       
       body {
         margin: 0;
@@ -432,7 +458,7 @@ const EmbedRoute: React.FC = () => {
         height: 100vh;
         display: flex;
         flex-direction: column;
-        background: ${theme === 'dark' ? '#1F2937' : '#FFFFFF'};
+                 background: #FFFFFF;
       }
       
       .embed-loading {
@@ -440,8 +466,8 @@ const EmbedRoute: React.FC = () => {
         align-items: center;
         justify-content: center;
         height: 100vh;
-        background: ${theme === 'dark' ? '#1F2937' : '#F9FAFB'};
-        color: ${theme === 'dark' ? '#E5E7EB' : '#374151'};
+        background: #F9FAFB;
+        color: #374151;
       }
       
       .embed-error {
@@ -449,8 +475,8 @@ const EmbedRoute: React.FC = () => {
         align-items: center;
         justify-content: center;
         height: 100vh;
-        background: ${theme === 'dark' ? '#1F2937' : '#F9FAFB'};
-        color: ${theme === 'dark' ? '#E5E7EB' : '#374151'};
+        background: #F9FAFB;
+        color: #374151;
         text-align: center;
         padding: 20px;
       }
@@ -482,7 +508,7 @@ const EmbedRoute: React.FC = () => {
     return () => {
       document.head.removeChild(style);
     };
-  }, [theme, primaryColor]);
+      }, [agent]);
 
   if (loading) {
     return (
@@ -558,7 +584,7 @@ const EmbedRoute: React.FC = () => {
           
           {/* Chat Interface */}
           <div className="flex-1 min-h-0">
-            <EmbedChatInterface agent={agent} sessionToken={null} placeholder={placeholder} />
+            <EmbedChatInterface agent={agent} sessionToken={sessionToken} placeholder="Type your message..." />
           </div>
         </div>
       )}

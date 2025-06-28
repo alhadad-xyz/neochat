@@ -139,6 +139,8 @@ export interface Message {
   sender: 'user' | 'agent';
   timestamp: Date;
   agentName?: string;
+  agentAvatar?: string;
+  agentInitial?: string;
   isError?: boolean;
 }
 

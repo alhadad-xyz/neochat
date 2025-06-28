@@ -1,13 +1,21 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, Sparkles, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface HeroProps {
   handleLogin: () => void;
 }
 
 const Hero = ({ handleLogin }: HeroProps) => {
+  const [showDemo, setShowDemo] = useState(false);
+
   return (
     <section className="pt-32 pb-20 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 relative overflow-hidden">
       {/* Glassmorphism background elements */}
@@ -46,9 +54,32 @@ const Hero = ({ handleLogin }: HeroProps) => {
               Create Your Agent
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
-            <Button variant="outline" className="text-lg px-8 py-6 backdrop-blur-md bg-white/10 dark:bg-black/10 border-white/30 dark:border-white/20 hover:bg-white/20 dark:hover:bg-white/10 shadow-lg">
-              Watch Demo
-            </Button>
+            
+            <Dialog open={showDemo} onOpenChange={setShowDemo}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="text-lg px-8 py-6 backdrop-blur-md bg-white/10 dark:bg-black/10 border-white/30 dark:border-white/20 hover:bg-white/20 dark:hover:bg-white/10 shadow-lg">
+                  Watch Demo
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                  <DialogTitle></DialogTitle>
+                </DialogHeader>
+                <div className="aspect-video w-full">
+                  <iframe 
+                    width="100%" 
+                    height="100%" 
+                    src="https://www.youtube.com/embed/KwhIT2u3_80?si=AOm_OjBnGkgBaRVK&amp;controls=0" 
+                    title="YouTube video player" 
+                    frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    referrerPolicy="strict-origin-when-cross-origin" 
+                    allowFullScreen
+                    className="rounded-lg"
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">

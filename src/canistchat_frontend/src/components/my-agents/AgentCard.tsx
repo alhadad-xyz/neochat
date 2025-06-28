@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar } from '@/components/ui/avatar';
 import { Bot, MoreVertical, Play, Pause, Edit, Trash2, Eye, MessageSquare, Code } from 'lucide-react';
 import {
   DropdownMenu,
@@ -19,6 +20,11 @@ interface Agent {
   status: 'active' | 'inactive';
   createdDate: string;
   traits: string[];
+  config?: {
+    appearance?: {
+      avatar?: string;
+    };
+  };
 }
 
 interface AgentCardProps {
@@ -96,9 +102,13 @@ const AgentCard = ({ agent, onStatusToggle, onDelete, onUpdate, onSelect, onNavi
         <CardHeader className="pb-3 px-4 pt-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Bot className="w-6 h-6 text-white" />
-              </div>
+              <Avatar
+                src={agent.config?.appearance?.avatar}
+                fallback={agent.name}
+                alt={`${agent.name} avatar`}
+                size="lg"
+                className="flex-shrink-0"
+              />
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                   {agent.name}

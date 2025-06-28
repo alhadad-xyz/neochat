@@ -163,7 +163,12 @@ actor ContextManager {
         
         let messageCount = messages.size();
         let recentMessages = if (messageCount > 5) {
-            Array.subArray<Message>(messages, messageCount - 5, 5)
+            let startIdx = if (messageCount >= 5) {
+                messageCount - 5
+            } else {
+                0
+            };
+            Array.subArray<Message>(messages, startIdx, 5)
         } else {
             messages
         };
@@ -376,8 +381,13 @@ actor ContextManager {
                 let keepCount = Nat.max(3, originalCount / 2);
                 let compressedMessages = Array.subArray<Message>(sortedMessages, 0, keepCount);
                 
-                // Generate summary of removed messages
-                let removedMessages = Array.subArray<Message>(sortedMessages, keepCount, originalCount - keepCount);
+                        // Generate summary of removed messages
+        let removedCount = if (originalCount >= keepCount) {
+            originalCount - keepCount
+        } else {
+            0
+        };
+        let removedMessages = Array.subArray<Message>(sortedMessages, keepCount, removedCount);
                 let summary = generateContextSummary(removedMessages);
                 
                 let newTokenCount = Array.foldLeft<Message, Nat>(compressedMessages, 0, func(acc, msg) {

@@ -103,6 +103,10 @@ const AgentCreator: React.FC<AgentCreatorProps> = ({ sessionToken, onAgentCreate
     console.log('Navigate to:', path);
   };
 
+  /**
+   * Handles form submission and agent creation
+   * Converts form data to canister format and creates the agent
+   */
   const handleCreateAgent = async () => {
     try {
       setCreating(true);
@@ -204,11 +208,8 @@ const AgentCreator: React.FC<AgentCreatorProps> = ({ sessionToken, onAgentCreate
         }
       };
       
-      console.log('Creating agent with canister:', agentRequest);
-      
-      // Call the actual canister
+      // Create agent via canister service
       const agentId = await canisterService.createAgent(agentRequest);
-      console.log('Agent created successfully with ID:', agentId);
       
       // Create an Agent object to pass to the callback
       const createdAgent: Agent = {
@@ -251,7 +252,7 @@ const AgentCreator: React.FC<AgentCreatorProps> = ({ sessionToken, onAgentCreate
         }
       };
       
-      // Reset form
+      // Reset form to initial state
       setAgentFormData({
         name: '',
         description: '',

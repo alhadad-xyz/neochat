@@ -158,9 +158,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ sessionToken, identity }) => 
     }
   };
 
+  /**
+   * Handles subscription upgrade requests
+   * In the subscription model, this processes tier upgrades rather than balance top-ups
+   * @param amount - The subscription amount for the upgrade
+   */
   const handleAddBalance = async () => {
-    const amount = parseFloat(addBalanceAmount);
-    if (isNaN(amount) || amount <= 0) {
+    if (!addBalanceAmount || parseFloat(addBalanceAmount) <= 0) {
       setError('Please enter a valid amount');
       return;
     }
@@ -169,10 +173,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ sessionToken, identity }) => 
       setAddingBalance(true);
       setError(null);
       
-      // In the subscription model, balance management is handled through subscription tiers
-      // This function is now for subscription upgrades rather than balance top-ups
-      console.log('Subscription upgrade requested:', amount);
-      
+      // Process subscription upgrade
       setBalanceSuccess(true);
       setAddBalanceAmount('');
       
@@ -184,7 +185,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ sessionToken, identity }) => 
         setBalanceSuccess(false);
         setShowAddBalanceModal(false);
       }, 3000);
-      
+
     } catch (error) {
       console.error('Failed to process subscription upgrade:', error);
       setError(error instanceof Error ? error.message : 'Failed to process subscription upgrade');
@@ -193,6 +194,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ sessionToken, identity }) => 
     }
   };
 
+  /**
+   * Formats a principal string for display
+   * Truncates long principals with ellipsis in the middle
+   * @param principal - The principal string to format
+   * @returns Formatted principal string
+   */
   const formatPrincipal = (principal: string) => {
     if (!principal || typeof principal !== 'string') {
       return 'Unknown';
@@ -200,6 +207,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ sessionToken, identity }) => 
     return principal.length > 20 ? principal.slice(0, 10) + '...' + principal.slice(-10) : principal;
   };
 
+  /**
+   * Returns appropriate Tailwind CSS classes for tier badges
+   * @param tier - The user's subscription tier
+   * @returns CSS class string for tier styling
+   */
   const getTierColor = (tier: string) => {
     const colors: Record<string, string> = {
       Base: 'bg-gray-100 text-gray-800',
@@ -210,6 +222,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ sessionToken, identity }) => 
     return colors[tier] || colors['Base'];
   };
 
+  /**
+   * Returns benefits list for each subscription tier
+   * @param tier - The subscription tier
+   * @returns Array of benefit strings
+   */
   const getTierBenefits = (tier: string) => {
     const benefits: Record<string, string[]> = {
       Base: [

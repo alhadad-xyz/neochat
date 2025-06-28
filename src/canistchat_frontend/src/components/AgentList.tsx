@@ -18,6 +18,13 @@ interface AgentCardAgent {
   status: 'active' | 'inactive';
   createdDate: string;
   traits: string[];
+  config?: {
+    appearance?: {
+      avatar?: string;
+      theme?: string;
+      welcomeMessage?: string;
+    };
+  };
 }
 
 const AgentList: React.FC<AgentListProps> = ({ sessionToken, onSelectAgent, selectedAgent, onNavigate }) => {
@@ -210,7 +217,7 @@ const AgentList: React.FC<AgentListProps> = ({ sessionToken, onSelectAgent, sele
     try {
       // Determine the new status
       const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
-      console.log(`Toggling status for agent ${agentId} from ${currentStatus} to ${newStatus}`);
+  
       
       // Call the canister to update the agent status
       await canisterService.updateAgentStatus(agentId, newStatus);
@@ -270,7 +277,7 @@ const AgentList: React.FC<AgentListProps> = ({ sessionToken, onSelectAgent, sele
     try {
       // Call the canister service to delete the agent
       await canisterService.deleteAgent(agentId);
-      console.log(`Agent ${agentId} deleted successfully`);
+
       
       // Remove the agent from the local state
       setAgents(prevAgents => prevAgents.filter(agent => agent.id !== agentId));
@@ -294,20 +301,44 @@ const AgentList: React.FC<AgentListProps> = ({ sessionToken, onSelectAgent, sele
       status: agent.status === 'Active' ? 'active' : 'inactive',
       createdDate: new Date(agent.created).toLocaleDateString(),
       traits: agent.config.personality.traits,
+      config: {
+        appearance: {
+          avatar: agent.config.appearance.avatar,
+          theme: agent.config.appearance.theme || '',
+          welcomeMessage: agent.config.appearance.welcomeMessage || '',
+        },
+      },
     };
   };
 
   // Handle update from AgentCard (convert back from AgentCardAgent to Agent format)
   const handleAgentCardUpdate = async (agentId: string, updatedAgentCard: Partial<AgentCardAgent>) => {
-    // Convert the AgentCard format back to Agent format
-    const updatedAgent: Partial<Agent> = {
-      ...updatedAgentCard,
-      status: updatedAgentCard.status === 'active' ? 'Active' : 
-              updatedAgentCard.status === 'inactive' ? 'Inactive' : undefined,
-    };
-    
-    // Remove the AgentCard-specific fields that don't exist in Agent
-    delete (updatedAgent as any).createdDate;
+    // Find the current agent to preserve existing config
+    const currentAgent = agents.find(a => a.id === agentId);
+    if (!currentAgent) return;
+
+    // Create the updated agent object with proper typing
+    const updatedAgent: Partial<Agent> = {};
+
+    // Handle basic properties
+    if (updatedAgentCard.name !== undefined) updatedAgent.name = updatedAgentCard.name;
+    if (updatedAgentCard.description !== undefined) updatedAgent.description = updatedAgentCard.description;
+    if (updatedAgentCard.status !== undefined) {
+      updatedAgent.status = updatedAgentCard.status === 'active' ? 'Active' : 'Inactive';
+    }
+
+    // Handle config updates - only if appearance data is provided
+    if (updatedAgentCard.config?.appearance) {
+      updatedAgent.config = {
+        ...currentAgent.config,
+        appearance: {
+          ...currentAgent.config.appearance,
+          avatar: updatedAgentCard.config.appearance.avatar || currentAgent.config.appearance.avatar,
+          theme: updatedAgentCard.config.appearance.theme || currentAgent.config.appearance.theme,
+          welcomeMessage: updatedAgentCard.config.appearance.welcomeMessage || currentAgent.config.appearance.welcomeMessage,
+        },
+      };
+    }
     
     await handleUpdateAgent(agentId, updatedAgent);
   };

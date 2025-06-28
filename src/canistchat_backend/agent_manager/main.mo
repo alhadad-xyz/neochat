@@ -687,9 +687,23 @@ actor AgentManager {
                 
                 // Trim context if exceeds max size
                 if (updatedMessages.size() > context.maxSize) {
-                    let startIdx = updatedMessages.size() - context.maxSize;
-                    updatedMessages := Array.tabulate<ContextMessage>(context.maxSize, func(i) {
-                        updatedMessages[startIdx + i]
+                    let startIdx = if (updatedMessages.size() >= context.maxSize) {
+                        updatedMessages.size() - context.maxSize
+                    } else {
+                        0
+                    };
+                    let actualSize = Nat.min(context.maxSize, updatedMessages.size());
+                    updatedMessages := Array.tabulate<ContextMessage>(actualSize, func(i) {
+                        let accessIndex = if (startIdx + i < updatedMessages.size()) {
+                            startIdx + i
+                        } else {
+                            if (updatedMessages.size() > 0) {
+                                updatedMessages.size() - 1
+                            } else {
+                                0
+                            }
+                        };
+                        updatedMessages[accessIndex]
                     });
                 };
                 
@@ -1134,7 +1148,7 @@ actor AgentManager {
                                 processingTime = processingTime;
                             })
                         };
-                        case (#err(error)) {
+                        case (#err(_)) {
                             // Fallback to a basic response if LLM fails
                             let fallbackResponse = "Hello! I'm " # agent.name # ". " # agent.description # " I received your message: \"" # userMessage # "\". I'm here to help! (Note: I'm currently running in demonstration mode)";
                             
@@ -1532,7 +1546,7 @@ actor AgentManager {
                             #err(#InternalError("LLM processing failed: " # errorMessage))
                         };
                     }
-                } catch (_e) {
+                } catch (_) {
                     #err(#InternalError("Inter-canister call failed"))
                 }
             };
@@ -1601,14 +1615,31 @@ actor AgentManager {
         
         // Keep the most recent messages and some important earlier ones
         let recentCount = (maxSize * 70) / 100; // 70% recent messages
-        let importantCount = maxSize - recentCount; // 30% important messages
+        let importantCount = if (maxSize >= recentCount) {
+            maxSize - recentCount
+        } else {
+            0
+        }; // 30% important messages
         
         let totalMessages = messages.size();
-        let recentMessages = Array.subArray<ContextMessage>(messages, totalMessages - recentCount, recentCount);
+        let recentStartIdx = if (totalMessages >= recentCount) {
+            totalMessages - recentCount
+        } else {
+            0
+        };
+        let actualRecentCount = Nat.min(recentCount, totalMessages);
+        let recentMessages = Array.subArray<ContextMessage>(messages, recentStartIdx, actualRecentCount);
         
         // Select important messages from earlier in conversation
-        let earlierMessages = Array.subArray<ContextMessage>(messages, 0, totalMessages - recentCount);
-        let importantMessages = Array.subArray<ContextMessage>(earlierMessages, 0, Nat.min(importantCount, earlierMessages.size()));
+        let earlierEndIdx = if (totalMessages >= recentCount) {
+            totalMessages - recentCount
+        } else {
+            totalMessages
+        };
+        let actualEarlierEndIdx = Nat.min(earlierEndIdx, messages.size());
+        let earlierMessages = Array.subArray<ContextMessage>(messages, 0, actualEarlierEndIdx);
+        let actualImportantCount = Nat.min(importantCount, earlierMessages.size());
+        let importantMessages = Array.subArray<ContextMessage>(earlierMessages, 0, actualImportantCount);
         
         Array.append(importantMessages, recentMessages)
     };

@@ -1269,7 +1269,7 @@ class CanisterService {
           this.HEALTH_CHECK_TIMEOUT // Use longer timeout
         );
         
-        console.log('🔍 LLM Processor health check result:', result);
+
         
         // Map the status properly
         const mappedStatus = (() => {
@@ -1357,31 +1357,32 @@ class CanisterService {
    * console.log(`Context Manager: ${status.contextManager}`);
    * ```
    */
+  /**
+   * Gets comprehensive system status from all canisters
+   * 
+   * This method performs health checks on all major system components
+   * and returns a unified status report. It uses Promise.allSettled to
+   * ensure that one failure doesn't affect the others.
+   * 
+   * @returns Promise resolving to comprehensive system status
+   */
   async getSystemStatus(): Promise<{
     agentManager: string;
     llmProcessor: string;
     contextManager: string;
   }> {
     try {
-      console.log('🔍 Getting system status...');
-      
       // Get comprehensive system status from all canisters with individual timeout handling
       // Use Promise.allSettled to prevent one failure from affecting others
       const results = await Promise.allSettled([
-        this.healthCheck(), // Now uses debouncing and longer timeout
-        this.getLLMProcessorHealth(), // Now uses debouncing and longer timeout
-        this.getContextManagerHealth() // Now uses debouncing
+        this.healthCheck(),
+        this.getLLMProcessorHealth(),
+        this.getContextManagerHealth()
       ]);
 
       const [agentHealth, llmHealth, contextHealth] = results;
 
-      console.log('🔍 Health check results:', {
-        agentHealth: agentHealth.status === 'fulfilled' ? agentHealth.value : agentHealth.reason,
-        llmHealth: llmHealth.status === 'fulfilled' ? llmHealth.value : llmHealth.reason,
-        contextHealth: contextHealth.status === 'fulfilled' ? contextHealth.value : contextHealth.reason
-      });
-
-      // Fix Agent Manager status logic - check if AgentManager service is specifically OK
+      // Parse Agent Manager status
       const agentManagerStatus = agentHealth.status === 'fulfilled' ? 
         (() => {
           const agentManagerService = agentHealth.value.services.find((s: string) => s.includes('AgentManager'));
@@ -1397,7 +1398,7 @@ class CanisterService {
       const llmProcessorStatus = llmHealth.status === 'fulfilled' ? 
         llmHealth.value.status : 'Error';
       
-      // Fix Context Manager status - it's built into Agent Manager, so if Agent Manager is OK, Context Manager is OK
+      // Context Manager is built into Agent Manager
       const contextManagerStatus = agentHealth.status === 'fulfilled' ? 
         (() => {
           const contextManagerService = agentHealth.value.services.find((s: string) => s.includes('ContextManager'));
@@ -1416,7 +1417,6 @@ class CanisterService {
         contextManager: contextManagerStatus,
       };
 
-      console.log('Final system status:', systemStatus);
       return systemStatus;
     } catch (error) {
       console.error('Error getting system status:', error);
@@ -1485,6 +1485,20 @@ class CanisterService {
     userBalance: UserBalance | null;
   }> {
     try {
+      // Get performance metrics from localStorage for enhanced analytics
+      const getStoredPerformanceMetrics = (agentId: string) => {
+        try {
+          const metricsKey = `neochat_performance_${agentId}`;
+          const storedMetrics = localStorage.getItem(metricsKey);
+          if (storedMetrics) {
+            return JSON.parse(storedMetrics);
+          }
+        } catch (error) {
+          console.warn(`Failed to load performance metrics for agent ${agentId}:`, error);
+        }
+        return null;
+      };
+
       // Get all user agents
       const agents = await this.getUserAgents();
       
@@ -1493,6 +1507,30 @@ class CanisterService {
         this.getUsageHistory(50), // Get last 50 usage records
         this.getUserBalance()
       ]);
+
+      // Calculate overall performance metrics first
+      let totalResponseTime = 0;
+      let totalSuccessfulMessages = 0;
+      let totalStoredFailedMessages = 0;
+      let overallSuccessRate = 100; // Default fallback
+      let overallAverageResponseTime = 1.2; // Default 1.2s
+
+      agents.forEach(agent => {
+        const metrics = getStoredPerformanceMetrics(agent.id);
+        if (metrics) {
+          totalSuccessfulMessages += metrics.successfulMessages || 0;
+          totalStoredFailedMessages += metrics.failedMessages || 0;
+          totalResponseTime += metrics.totalResponseTime || 0;
+        }
+      });
+
+      if (totalSuccessfulMessages + totalStoredFailedMessages > 0) {
+        overallSuccessRate = (totalSuccessfulMessages / (totalSuccessfulMessages + totalStoredFailedMessages)) * 100;
+      }
+
+      if (totalSuccessfulMessages > 0) {
+        overallAverageResponseTime = totalResponseTime / totalSuccessfulMessages / 1000; // Convert to seconds
+      }
 
       // Calculate overview metrics from agent analytics
       let totalMessages = 0;
@@ -1509,8 +1547,15 @@ class CanisterService {
           averageRating: undefined
         };
 
-        totalMessages += analytics.totalMessages;
-        totalConversations += analytics.totalConversations;
+        // Get stored performance metrics for this agent
+        const performanceMetrics = getStoredPerformanceMetrics(agent.id);
+
+        // Use performance metrics if available, otherwise fall back to analytics
+        const actualMessages = performanceMetrics?.totalMessages || analytics.totalMessages;
+        const actualConversations = performanceMetrics?.totalMessages ? Math.max(1, Math.floor(performanceMetrics.totalMessages / 3)) : analytics.totalConversations;
+
+        totalMessages += actualMessages;
+        totalConversations += actualConversations;
         totalCost += analytics.totalTokensUsed * 0.01; // Convert tokens to USD cost
 
         if (analytics.averageRating !== undefined) {
@@ -1518,13 +1563,25 @@ class CanisterService {
           ratingCount++;
         }
 
+        // Calculate average response time from performance metrics
+        let avgResponseTime = 1.2; // Default
+        if (performanceMetrics && performanceMetrics.successfulMessages > 0) {
+          avgResponseTime = performanceMetrics.averageResponseTime / 1000; // Convert to seconds
+        }
+
+        // Use success rate as satisfaction if available
+        let satisfaction = analytics.averageRating || 4.5;
+        if (performanceMetrics && performanceMetrics.totalMessages > 0) {
+          satisfaction = (performanceMetrics.successRate / 100) * 5; // Convert percentage to 5-star scale
+        }
+
         return {
           agentId: agent.id,
           agentName: agent.name,
-          messages: analytics.totalMessages,
-          conversations: analytics.totalConversations,
-          avgResponseTime: 1.2, // Mock response time (could be tracked in future)
-          satisfaction: analytics.averageRating || 4.5, // Default satisfaction if no rating
+          messages: actualMessages,
+          conversations: actualConversations,
+          avgResponseTime,
+          satisfaction,
           cost: analytics.totalTokensUsed * 0.01, // Convert tokens to USD cost
           status: 'Active' in agent.status ? 'Active' :
                   'Inactive' in agent.status ? 'Inactive' :
@@ -1536,8 +1593,8 @@ class CanisterService {
       const overview = {
         totalMessages,
         totalConversations,
-        averageResponseTime: 1.2, // Mock average response time
-        successRate: totalMessages > 0 ? 98.5 : 100, // Mock success rate
+        averageResponseTime: overallAverageResponseTime,
+        successRate: overallSuccessRate,
         totalCost
       };
 
@@ -1549,6 +1606,67 @@ class CanisterService {
       };
     } catch (error) {
       console.error('Error getting comprehensive analytics:', error);
+      
+      // Try to provide fallback data from localStorage performance metrics
+      try {
+        const fallbackPerformance: any[] = [];
+        let fallbackTotalMessages = 0;
+        let fallbackSuccessRate = 100;
+        let fallbackAvgResponseTime = 1.2;
+
+        // Scan localStorage for any performance data
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('neochat_performance_')) {
+            try {
+              const agentId = key.replace('neochat_performance_', '');
+              const performanceData = JSON.parse(localStorage.getItem(key) || '{}');
+              
+              if (performanceData.totalMessages) {
+                fallbackTotalMessages += performanceData.totalMessages;
+                
+                if (performanceData.successfulMessages > 0) {
+                  fallbackAvgResponseTime = performanceData.averageResponseTime / 1000;
+                }
+                
+                fallbackSuccessRate = performanceData.successRate || 100;
+
+                fallbackPerformance.push({
+                  agentId,
+                  agentName: `Agent ${agentId.substring(0, 8)}`,
+                  messages: performanceData.totalMessages,
+                  conversations: Math.max(1, Math.floor(performanceData.totalMessages / 3)),
+                  avgResponseTime: fallbackAvgResponseTime,
+                  satisfaction: (performanceData.successRate / 100) * 5,
+                  cost: 0,
+                  status: 'Active'
+                });
+              }
+            } catch (parseError) {
+              console.warn('Failed to parse performance data for fallback:', parseError);
+            }
+          }
+        }
+
+        if (fallbackTotalMessages > 0) {
+
+          return {
+            overview: {
+              totalMessages: fallbackTotalMessages,
+              totalConversations: Math.max(1, Math.floor(fallbackTotalMessages / 3)),
+              averageResponseTime: fallbackAvgResponseTime,
+              successRate: fallbackSuccessRate,
+              totalCost: 0
+            },
+            agentPerformance: fallbackPerformance,
+            usageHistory: [],
+            userBalance: null
+          };
+        }
+      } catch (fallbackError) {
+        console.warn('Failed to create fallback analytics data:', fallbackError);
+      }
+
       return {
         overview: {
           totalMessages: 0,
@@ -1898,6 +2016,103 @@ class CanisterService {
   private ensureInitialized(): void {
     if (!this.isInitialized) {
       throw new Error('Canister service not initialized');
+    }
+  }
+
+  /**
+   * Records message usage for analytics tracking
+   * 
+   * This method tracks each message sent to an agent for analytics and usage monitoring.
+   * It helps ensure that conversation metrics are properly recorded.
+   * 
+   * @param agentId - The ID of the agent that processed the message
+   * @param tokens - Estimated token count for the message (optional, defaults to estimated count)
+   * @returns Promise resolving to usage record ID
+   */
+  async recordMessageUsage(agentId: string, tokens?: number): Promise<string | null> {
+    try {
+      if (!this.metricsCollectorActor || !this.identity) {
+        console.warn('Cannot record usage - metrics collector or identity not available');
+        return null;
+      }
+
+      const principal = this.identity.getPrincipal();
+      const estimatedTokens = BigInt(tokens || 100); // Default estimate if not provided
+      
+      const result = await this.metricsCollectorActor.recordUsage(
+        principal,
+        agentId,
+        estimatedTokens,
+        { 'MessageProcessing': { 'BasicChat': null } }
+      );
+
+      if ('ok' in result) {
+        console.log('✅ Message usage recorded successfully:', result.ok);
+        return result.ok;
+      } else {
+        console.warn('⚠️ Failed to record message usage:', result.err);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error recording message usage:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Records performance metrics for analytics tracking
+   * 
+   * This method tracks performance data like response times and success rates
+   * to provide enhanced analytics insights.
+   * 
+   * @param agentId - The ID of the agent
+   * @param responseTime - Response time in milliseconds
+   * @param success - Whether the message was successful
+   * @returns Promise resolving to success status
+   */
+  async recordPerformanceMetrics(agentId: string, responseTime: number, success: boolean): Promise<boolean> {
+    try {
+      // Store performance metrics in localStorage for immediate access
+      const metricsKey = `neochat_performance_${agentId}`;
+      const existingMetrics = localStorage.getItem(metricsKey);
+      
+      let metrics = {
+        totalMessages: 0,
+        successfulMessages: 0,
+        failedMessages: 0,
+        totalResponseTime: 0,
+        averageResponseTime: 0,
+        successRate: 100,
+        lastUpdated: new Date().toISOString()
+      };
+
+      if (existingMetrics) {
+        try {
+          metrics = JSON.parse(existingMetrics);
+        } catch (error) {
+          console.warn('Failed to parse existing performance metrics, starting fresh');
+        }
+      }
+
+      // Update metrics
+      metrics.totalMessages += 1;
+      if (success) {
+        metrics.successfulMessages += 1;
+        metrics.totalResponseTime += responseTime;
+        metrics.averageResponseTime = metrics.totalResponseTime / metrics.successfulMessages;
+      } else {
+        metrics.failedMessages += 1;
+      }
+      metrics.successRate = (metrics.successfulMessages / metrics.totalMessages) * 100;
+      metrics.lastUpdated = new Date().toISOString();
+
+      localStorage.setItem(metricsKey, JSON.stringify(metrics));
+      console.log('✅ Performance metrics recorded:', { agentId, responseTime, success, metrics });
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Error recording performance metrics:', error);
+      return false;
     }
   }
 }

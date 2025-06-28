@@ -79,24 +79,20 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
         { name: 'Sun', messages: 15, conversations: 10, responseTime: 0.9 },
       ];
 
+  /**
+   * Loads comprehensive analytics data from canisters
+   * Includes conversation history for the selected agent if available
+   */
   useEffect(() => {
-    const loadAnalyticsData = async () => {
-      if (!sessionToken) return;
+    if (!sessionToken) return;
 
+    const loadAnalyticsData = async () => {
+      setLoading(true);
+      setError(null);
+      
       try {
-        setLoading(true);
-        setError(null);
-        
         // Get comprehensive analytics data from canisters
         const data = await canisterService.getComprehensiveAnalytics();
-        console.log('Analytics data loaded:', data);
-        console.log('Data structure check:', {
-          hasOverview: !!data.overview,
-          overviewKeys: data.overview ? Object.keys(data.overview) : [],
-          totalMessages: data.overview?.totalMessages,
-          totalConversations: data.overview?.totalConversations,
-          averageResponseTime: data.overview?.averageResponseTime
-        });
         
         // Get conversation history for selected agent if available
         let conversationHistory: Array<{
@@ -122,7 +118,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ sessionToken, selectedAgent }) =>
         console.error('Error loading analytics data:', error);
         setError('Failed to load analytics data. Please try again.');
         
-        // Fallback to empty data on error
+        // Fallback to empty data structure on error
         setAnalyticsData({
           overview: {
             totalMessages: 0,

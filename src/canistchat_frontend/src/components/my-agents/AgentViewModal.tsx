@@ -3,6 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 import { Edit } from 'lucide-react';
 
 interface Agent {
@@ -12,6 +13,11 @@ interface Agent {
   status: 'active' | 'inactive';
   createdDate: string;
   traits: string[];
+  config?: {
+    appearance?: {
+      avatar?: string;
+    };
+  };
 }
 
 interface AgentViewModalProps {
@@ -82,7 +88,14 @@ const AgentViewModal = ({ agent, isOpen, onClose, onEdit }: AgentViewModalProps)
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Avatar</label>
-                <p className="text-gray-900 dark:text-white">Default</p>
+                <div className="mt-2">
+                  <Avatar
+                    src={agent.config?.appearance?.avatar}
+                    fallback={agent.name}
+                    alt={`${agent.name} avatar`}
+                    size="lg"
+                  />
+                </div>
               </div>
               <div className="col-span-2">
                 <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Welcome Message</label>

@@ -38,6 +38,7 @@ import DashboardStats from './DashboardStats';
 import QuickActions from './QuickActions';
 import RecentAgents from './RecentAgents';
 import { SubscriptionDisplay } from '../SubscriptionDisplay';
+import { Avatar } from '@/components/ui/avatar';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -468,9 +469,12 @@ const Dashboard: React.FC<DashboardProps> = ({ sessionToken, identity, onNavigat
                         className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                         onClick={() => onNavigate(`chat/${agent.id}`)}
                       >
-                        <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white font-medium">
-                          {agent.name.charAt(0).toUpperCase()}
-                        </div>
+                        <Avatar
+                          src={Array.isArray(agent.config?.appearance?.avatar) && agent.config.appearance.avatar.length > 0 ? agent.config.appearance.avatar[0] : undefined}
+                          fallback={agent.name.charAt(0).toUpperCase()}
+                          alt={`${agent.name} avatar`}
+                          size="md"
+                        />
                         <div className="flex-1">
                           <h4 className="text-sm font-medium text-gray-900 dark:text-white">{agent.name}</h4>
                           <p className="text-xs text-gray-500 dark:text-gray-400">{agent.description}</p>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, Bot } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Avatar } from '@/components/ui/avatar';
 import { Agent } from '../../types';
 
 interface ChatSidebarProps {
@@ -99,9 +100,12 @@ const ChatSidebar = ({ selectedAgent, onSelectAgent, agents = [], isLoading = fa
                 >
                   <div className="flex items-start space-x-3">
                     <div className="relative">
-                      <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white font-medium">
-                        {agent.config.appearance.avatar || agent.name.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar
+                        src={agent.config?.appearance?.avatar}
+                        fallback={agent.name}
+                        alt={`${agent.name} avatar`}
+                        size="md"
+                      />
                       {agent.status === 'Active' && (
                         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-gray-800"></div>
                       )}

@@ -2,14 +2,8 @@ import LLM "mo:llm";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Array "mo:base/Array";
 import Nat "mo:base/Nat";
 import Int "mo:base/Int";
-import Option "mo:base/Option";
-import Blob "mo:base/Blob";
-import Debug "mo:base/Debug";
-import Principal "mo:base/Principal";
-import Char "mo:base/Char";
 
 actor LLMProcessor {
     // Types
@@ -123,7 +117,7 @@ actor LLMProcessor {
         try {
             let response = await LLM.prompt(#Llama3_1_8B, prompt);
             #ok(response)
-        } catch (err) {
+        } catch (_) {
             #err(#ProcessingError("LLM request failed"))
         }
     };
@@ -204,14 +198,14 @@ actor LLMProcessor {
         try {
             let testResponse = await processPrompt("Hello, respond with 'Health check passed'");
             switch (testResponse) {
-                case (#ok(response)) { 
+                case (#ok(_)) { 
                     {
                         status = "Operational - LLM integration active";
                         providers = 1; // DFINITY LLM
                         activeProviders = 1; // DFINITY LLM is active
                     }
                 };
-                case (#err(error)) { 
+                case (#err(_)) { 
                     {
                         status = "Error - LLM integration failed";
                         providers = 1;
@@ -219,7 +213,7 @@ actor LLMProcessor {
                     }
                 };
             }
-        } catch (err) {
+        } catch (_) {
         {
                 status = "Error - Health check failed";
                 providers = 1;

@@ -188,7 +188,8 @@ actor DataStorage {
                 if (agentConversations.size() <= l) {
                     agentConversations
                 } else {
-                    Array.subArray<Conversation>(agentConversations, 0, l);
+                    let actualLimit = Nat.min(l, agentConversations.size());
+                    Array.subArray<Conversation>(agentConversations, 0, actualLimit);
                 };
             };
             case null { agentConversations };

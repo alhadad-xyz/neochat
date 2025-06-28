@@ -4,6 +4,7 @@ import { Send, Bot } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar } from '@/components/ui/avatar';
 
 interface Message {
   id: string;
@@ -88,9 +89,11 @@ const ChatArea = ({ selectedAgent }: ChatAreaProps) => {
       {/* Chat Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white font-medium">
-            S
-          </div>
+          <Avatar
+            fallback="S"
+            alt="Sales Bot avatar"
+            size="md"
+          />
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Sales Bot
@@ -113,9 +116,12 @@ const ChatArea = ({ selectedAgent }: ChatAreaProps) => {
               msg.isBot ? 'flex-row' : 'flex-row-reverse space-x-reverse'
             }`}>
               {msg.isBot && (
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                  S
-                </div>
+                <Avatar
+                  fallback="S"
+                  alt="Sales Bot avatar"
+                  size="sm"
+                  className="flex-shrink-0"
+                />
               )}
               <div className={`rounded-lg px-4 py-2 ${
                 msg.isBot

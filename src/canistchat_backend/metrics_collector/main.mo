@@ -185,8 +185,12 @@ actor MetricsCollector {
         let monthlyAllowance = getMonthlyAllowance(updatedSubscription.currentTier);
         
         if (newMonthlyUsage > monthlyAllowance) {
-            // Calculate overage charges
-            let overageMessages = newMonthlyUsage - monthlyAllowance;
+            // Calculate overage charges - safe subtraction to prevent trapping
+            let overageMessages = if (newMonthlyUsage >= monthlyAllowance) {
+                newMonthlyUsage - monthlyAllowance
+            } else {
+                0
+            };
             let overageCost = calculateOverageCost(overageMessages);
             
             let finalSubscription: UserSubscription = {
@@ -300,7 +304,13 @@ actor MetricsCollector {
                 if (userUsage.size() <= l) {
                     userUsage
                 } else {
-                    Array.subArray<UsageRecord>(userUsage, userUsage.size() - l, l);
+                    let startIdx = if (userUsage.size() >= l) {
+                        userUsage.size() - l
+                    } else {
+                        0
+                    };
+                    let actualLength = Nat.min(l, userUsage.size());
+                    Array.subArray<UsageRecord>(userUsage, startIdx, actualLength);
                 };
             };
             case null { userUsage };

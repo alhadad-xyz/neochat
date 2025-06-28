@@ -72,12 +72,19 @@ const Dashboard: React.FC<DashboardProps> = ({
     }
   };
 
+  /**
+   * Handles search query changes
+   * TODO: Implement comprehensive search functionality across agents
+   * @param query - The search query string
+   */
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
-    // TODO: Implement search functionality
-    console.log('Search query:', query);
+    // Future implementation: filter agents, conversations, and analytics
   };
 
+  /**
+   * Handles user logout process
+   */
   const handleLogout = () => {
     if (onLogout) {
       onLogout();

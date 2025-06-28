@@ -40,7 +40,6 @@ interface Agent {
   frequencyPenalty?: number;
   presencePenalty?: number;
   systemPromptTemplate?: string;
-  avatarUrl?: string;
   theme?: string;
   primaryColor?: string;
   secondaryColor?: string;
@@ -50,6 +49,11 @@ interface Agent {
   fontSize?: string;
   welcomeMessage?: string;
   customCSS?: string;
+  config?: {
+    appearance?: {
+      avatar?: string;
+    };
+  };
 }
 
 interface AgentEditModalProps {
@@ -121,7 +125,11 @@ const AgentEditModal = ({ agent, isOpen, onClose, onSave }: AgentEditModalProps)
         frequencyPenalty: agent.frequencyPenalty || 0.0,
         presencePenalty: agent.presencePenalty || 0.0,
         systemPromptTemplate: agent.systemPromptTemplate || 'You are a helpful AI assistant.',
-        avatarUrl: agent.avatarUrl || '',
+        config: {
+          appearance: {
+            avatar: agent.config?.appearance?.avatar || '',
+          },
+        },
         theme: agent.theme || 'professional-blue',
         primaryColor: agent.primaryColor || '#3B82F6',
         secondaryColor: agent.secondaryColor || '#EFF6FF',
@@ -133,7 +141,7 @@ const AgentEditModal = ({ agent, isOpen, onClose, onSave }: AgentEditModalProps)
         customCSS: agent.customCSS || ''
       };
       setFormData(defaultFormData);
-      setAvatarPreview(agent.avatarUrl || null);
+      setAvatarPreview(agent.config?.appearance?.avatar || null);
     }
   }, [agent]);
 
@@ -146,7 +154,7 @@ const AgentEditModal = ({ agent, isOpen, onClose, onSave }: AgentEditModalProps)
 
   const handleCancel = () => {
     setFormData({ ...agent });
-    setAvatarPreview(agent.avatarUrl || null);
+    setAvatarPreview(agent.config?.appearance?.avatar || null);
     onClose();
   };
 
@@ -204,7 +212,16 @@ const AgentEditModal = ({ agent, isOpen, onClose, onSave }: AgentEditModalProps)
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setAvatarPreview(result);
-        setFormData({ ...formData, avatarUrl: result });
+        setFormData({ 
+          ...formData, 
+          config: {
+            ...formData.config,
+            appearance: {
+              ...formData.config?.appearance,
+              avatar: result
+            }
+          }
+        });
       };
       reader.readAsDataURL(file);
     } catch (error) {
@@ -217,7 +234,16 @@ const AgentEditModal = ({ agent, isOpen, onClose, onSave }: AgentEditModalProps)
 
   const removeAvatar = () => {
     setAvatarPreview(null);
-    setFormData({ ...formData, avatarUrl: '' });
+    setFormData({ 
+      ...formData, 
+      config: {
+        ...formData.config,
+        appearance: {
+          ...formData.config?.appearance,
+          avatar: ''
+        }
+      }
+    });
   };
 
   const addKnowledgeSource = () => {
@@ -382,10 +408,10 @@ const AgentEditModal = ({ agent, isOpen, onClose, onSave }: AgentEditModalProps)
               <Label className="text-gray-700 dark:text-gray-300">Avatar</Label>
               <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <div className="relative">
-                  {avatarPreview || formData.avatarUrl ? (
+                  {avatarPreview || formData.config?.appearance?.avatar ? (
                     <div className="relative w-20 h-20 rounded-full overflow-hidden">
                       <img
-                        src={avatarPreview || formData.avatarUrl}
+                        src={avatarPreview || formData.config?.appearance?.avatar}
                         alt="Avatar preview"
                         className="w-full h-full object-cover"
                       />
